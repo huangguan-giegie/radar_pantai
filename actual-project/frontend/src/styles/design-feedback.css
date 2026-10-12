@@ -181,7 +181,7 @@
 .beach-composition > .section-heading { margin-bottom: 16px; }
 .recurrence-inline { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--coastal-line); }
 .recurrence-inline h3 { margin: 8px 0; }
-.marine-coverage-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.marine-coverage-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
 .marine-coverage-stats > div { padding: 12px 10px; border-radius: 13px; background: #ffffff12; }
 .marine-coverage-stats strong { display: block; color: #b8ff36; font-size: 27px; line-height: 1.2; }
 .marine-coverage-stats small { display: block; color: white; font-size: 12px; font-weight: 500; margin-top: 5px; }
