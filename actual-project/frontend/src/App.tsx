@@ -186,7 +186,7 @@ export default function App() {
                                   : pathname === '/home'
                                     ? 'Home'
                                     : 'Radar Sampah';
-  const pageTitle = pathname.startsWith('/insights') ? 'Insights'
+  const pageTitle = pathname.startsWith('/insights') ? 'Beach Insights'
     : pathname.startsWith('/j/') ? 'Cleanup invitation'
     : pathname.startsWith('/species/') || pathname.startsWith('/model-species/') ? 'Species guide'
     : pathname.startsWith('/habitats') ? 'Coastal habitats'

@@ -47,7 +47,7 @@ describe("species questions", () => {
     vi.mocked(askSpeciesQuestion).mockRejectedValueOnce(new Error("AI is busy.")).mockResolvedValueOnce({ answer: "Retry answer." });
     render(); enter("What can I do?"); await submit();
     expect(html()).toContain("AI is busy.");
-    await act(async () => button("Try again").props.onClick());
+    await act(async () => button("Try Again").props.onClick());
     expect(html()).toContain("Retry answer.");
     expect(askSpeciesQuestion).toHaveBeenCalledTimes(2);
   });

@@ -273,10 +273,10 @@ export default function HomeScreen() {
         </div>
       </button>
       <WhiteCard>
-        <p className="eyebrow">Wildlife needs space too</p>
+        <p className="eyebrow">Marine life needs space too</p>
         <h2>Found a hurt or stranded animal?</h2>
         <p className="subtle">
-          Keep your distance and use the official wildlife contacts before you
+          Keep your distance and use the official marine life contacts before you
           continue a cleanup.
         </p>
         <GhostButton onClick={() => nav("/community/wildlife-help")}>

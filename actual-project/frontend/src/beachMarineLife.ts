@@ -42,6 +42,7 @@ export function beachMarineCards(beachId: string, wildlife: readonly BeachWildli
     if (!guide || cards.has(guide.id)) return;
     cards.set(guide.id, {
       id: guide.id, name: guide.name, image: guide.image,
+      scientificName: guide.subtitle.split(' · ').reverse().find(value => value !== 'Mangrove tree' && /^[A-Z][a-z]+ [a-z]+$/.test(value)) ?? null,
       creditsUrl: guide.photoSource || '/credits', destination: `/species/${guide.id}?beach=${encodeURIComponent(beachId)}`,
       published: true, modelled: false, referencePlace: place,
     });

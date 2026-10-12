@@ -71,7 +71,7 @@ describe("wildlife help availability", () => {
         </Routes>
       </MemoryRouter>);
     });
-    const button = view.root.findAllByType("button").find(node => nodeText(node).includes("Hurt or stranded animal"));
+    const button = view.root.findAllByType("button").find(node => nodeText(node).includes("Hurt or Stranded Animal"));
     expect(button).toBeDefined();
     act(() => button!.props.onClick());
     expect(JSON.stringify(view.toJSON())).toContain("Wildlife help destination");

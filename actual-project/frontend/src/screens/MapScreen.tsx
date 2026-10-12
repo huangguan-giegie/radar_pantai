@@ -25,9 +25,9 @@ import { SpeciesPicture } from "../components/SpeciesPicture";
 import { marineLayerEnabled, marineLayerParams, selectMapBeach, regionMarineReferenceCount, radialSpecies, mapMarineCards } from "../mapMarineSelection";
 import { searchBeaches, borneoReportCounts } from "../beachSearch";
 const COLORS: Record<string, string> = {
-  Low: "#92ce55",
-  Moderate: "#e7bb51",
-  High: "#f08a38",
+  Low: "#367b40",
+  Moderate: "#866514",
+  High: "#b84f16",
   Severe: "#c20e19",
 };
 function BorneoInset({ onClick, counts }: { onClick: () => void; counts: ReturnType<typeof borneoReportCounts> }) {
@@ -289,7 +289,7 @@ export default function MapScreen() {
       const labels = selectedBeachId ? [] : placeMapLabels(locatedBeaches
         .filter(b => preferred.has(b.id) || zoom >= region.zoom + 1)
         .map(b => ({ id: b.id, name: b.name, preferred: preferred.has(b.id), ...map.latLngToContainerPoint([b.lat, b.lng]) })),
-        { width: size.x, height: size.y, obstacles, compact: compactLabels, labelHeight: 44 });
+        { width: size.x, height: size.y, obstacles, compact: compactLabels, labelHeight: layer === 'bio' ? 76 : 44 });
       const labelled = new Set(labels.map(label => label.id));
       const displayDot = (b: typeof locatedBeaches[number]) => marker(b.lat, b.lng, b.name,
         `<span class="beach-coast-dot" style="background:${COLORS[b.severity ?? ""] ?? "#70757c"}"></span>`,
@@ -333,9 +333,26 @@ export default function MapScreen() {
         node.className = "beach-map-label" + (compactLabels ? " compact" : "");
         const label = document.createElement("span");
         label.textContent = b.name;
-        label.style.color = !b.severity || b.severity === 'Severe' ? '#fff' : '#172b35';
+        label.style.color = '#fff';
         label.style.background = COLORS[b.severity ?? ""] ?? "#70757c";
         node.append(label);
+        // Surface a place-specific reference before a beach is selected.
+        // Clicking its marker still opens the full marine-life circle.
+        const references = layer === 'bio' ? mapMarineCards(b.id) : [];
+        const photo = references.find(item => item.image);
+        if (photo?.image) {
+          node.classList.add('has-species-preview');
+          const preview = document.createElement('span');
+          preview.className = 'map-label-species';
+          const image = document.createElement('img');
+          image.src = photo.image;
+          image.alt = photo.name;
+          preview.append(image);
+          const caption = document.createElement('small');
+          caption.textContent = 'Marine Life';
+          preview.append(caption);
+          node.append(preview);
+        }
         marker(
           b.lat,
           b.lng,
@@ -363,12 +380,11 @@ export default function MapScreen() {
         <div>
           {region && <button className="icon-button" aria-label="Full map" onClick={() => setRegion('')}><ArrowLeft size={18} /></button>}
           <h1>Choose a Beach</h1>
-          <button className="map-pill" onClick={() => setSheet('key')}>Key</button>
         </div>
         <form className="map-search-form" role="search" onSubmit={event => { event.preventDefault(); setSheet('beaches'); }}>
           <label className="coastal-search"><Search /><input type="search" aria-label="Search all beaches" placeholder="Search beaches in all regions" value={search} onChange={event => setSearch(event.target.value)} /></label>
         </form>
-        <div className="map-overlay-toggle"><span className="map-base-layer"><i aria-hidden="true" />Litter always on</span><button aria-pressed={layer === 'bio'} onClick={() => setParams(previous => marineLayerParams(previous, layer !== 'bio'), { replace: true })}><SpeciesIcon glyph="turtle" size={18} />Marine life <span className="map-layer-state">{layer === 'bio' ? 'On' : 'Off'}</span><span className="map-layer-switch" aria-hidden="true"><i /></span></button></div>
+        <div className="map-overlay-toggle"><span className="map-base-layer"><i aria-hidden="true" />Litter always on</span><button aria-pressed={layer === 'bio'} onClick={() => setParams(previous => marineLayerParams(previous, layer !== 'bio'), { replace: true })}><SpeciesIcon glyph="turtle" size={18} />Marine Life <span className="map-layer-state">{layer === 'bio' ? 'On' : 'Off'}</span><span className="map-layer-switch" aria-hidden="true"><i /></span></button></div>
       </header>
       {search.trim() && sheet !== 'beaches' && <section className="map-search-results" aria-label="Beach search results">
         {loading ? <p role="status">Loading beaches…</p> : error ? <DataUnavailable title="Could not load beaches" retry={() => void refresh()}>{error}</DataUnavailable> : <>
@@ -387,7 +403,7 @@ export default function MapScreen() {
         beachName={selectedBeach.name}
         rating={selectedBeach.severity ? severityLabel(selectedBeach.severity) : 'Insufficient data'}
         color={COLORS[selectedBeach.severity ?? ''] ?? '#70757c'}
-        lightText={!selectedBeach.severity || selectedBeach.severity === 'Severe'}
+        lightText
         cards={marineCards} position={selectionPosition}
         loading={!USE_MOCK && wildlifeLoading} error={!USE_MOCK && Boolean(wildlifeError)}
         onClose={closeSelection} onBeach={() => nav('/beach/' + selectedBeach.id, { state: { fromMarineMap: true } })}
@@ -419,6 +435,10 @@ export default function MapScreen() {
       {!region && <BorneoInset onClick={() => setRegion("borneo")} counts={borneoReportCounts(beaches)} />}
       {region && <button className="map-pill map-full-overview" onClick={() => setRegion("")}>Full Map</button>}
       </div>
+      {region ? <div className="map-attention-legend" aria-label="Beach attention levels">
+        {Object.entries(COLORS).map(([label, color]) => <span key={label}><i style={{ background: color }} />{label}</span>)}
+        <span><i style={{ background: '#70757c' }} />Insufficient Data</span>
+      </div> : <div className="map-legend-entry"><button className="map-pill" onClick={() => setSheet('key')}>Map Key</button></div>}
       <div className="map-bottom-card">
         {(error || offline) && (
           <p className="coastal-footnote" role="alert">
@@ -433,7 +453,7 @@ export default function MapScreen() {
             <strong>{selectedBeach ? 'Nearby marine life' : region ? (loading ? region.name : `${areaBeaches.length} beaches`) : 'Malaysia’s Coast'}</strong>
             <small>{selectedBeach ? selectedBeach.name : loading ? 'Loading beaches…' : region ? `${areaBeaches.reduce((n, beach) => n + beach.validReports, 0)} counted reports` : `${beaches.length} beaches · tap a region`}</small>
           </span>
-          <PrimaryButton height={44} style={{ width: 'auto', paddingInline: 14, fontSize: 12, boxShadow: 'none' }} onClick={() => setSheet('beaches')}>Beach list</PrimaryButton>
+          {region && <PrimaryButton height={44} style={{ width: 'auto', paddingInline: 14, boxShadow: 'none' }} onClick={() => setSheet('beaches')}>Beach List</PrimaryButton>}
         </div>
         {region && locatedBeaches.length < areaBeaches.length && <p className="coastal-footnote">More beaches are available in the list.</p>}
         {layer === 'bio' && <p className="coastal-footnote map-photo-hint">{selectedBeach ? (marineCards.length ? 'Centre → beach details · outer icons → guides' : 'Tap the centre for beach details.') : region ? 'Tap a beach to explore nearby marine life.' : 'Choose a region, then tap a beach.'}</p>}
@@ -463,7 +483,7 @@ export default function MapScreen() {
             style={{ marginTop: 18 }}
             onClick={() => setSheet(null)}
           >
-            Got It
+            Understood
           </PrimaryButton>
         </Sheet>
       )}

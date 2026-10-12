@@ -110,7 +110,7 @@ export function WildlifeGuide() {
   const effectiveGuidance = mergeWildlifeGuidance(guidance);
   return (
     <section>
-      <p className="eyebrow">Wildlife-friendly cleanup</p>
+      <p className="eyebrow">Marine Life-Friendly Cleanup</p>
       <WhiteCard>
         {effectiveGuidance.tips.slice(0, 3).map((text, i) => (
           <div key={text} className="wildlife-rule">

@@ -74,7 +74,7 @@ describe("direct beach list", () => {
     state.error = "Beach data is unavailable.";
     const html = renderList();
     expect(html).toContain("Could not load beaches");
-    expect(html).toContain("Try again");
+    expect(html).toContain("Try Again");
     expect(html).not.toContain("No matching beaches");
     state.retry!();
     expect(state.refresh).toHaveBeenCalledOnce();

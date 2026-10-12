@@ -84,10 +84,10 @@ export default function LiveInsightsScreen() {
   const nav = useNavigate();
   const { reportsVersion } = useApp();
   const { data, loading, error, refresh } = useAsyncData<Summary | null>(() => iteration3Request('/insights/summary'), [reportsVersion], null);
-  const titles: Record<string, string> = { trends: beachId ? 'Beach Trend' : 'Beach Trends', cleanup: 'Cleanup Results', 'cleanup-history': 'Cleanup History', participation: 'Participation', evidence: 'Evidence', wildlife: 'Wildlife Nearby', volunteers: 'Needs Volunteers' };
+  const titles: Record<string, string> = { trends: beachId ? 'Beach Trend' : 'Beach Trends', cleanup: 'Cleanup Results', 'cleanup-history': 'Cleanup History', participation: 'Participation', evidence: 'Evidence', wildlife: 'Marine Life Nearby', volunteers: 'Needs Volunteers' };
   const title = titles[topic] ?? 'Insights';
   const filtered = data?.beaches.filter(beach => (!beachId || beach.id === beachId) && (!params.get('q') || beach.name.toLowerCase().includes(params.get('q')!.toLowerCase())) && (!params.get('band') || beach.severity === params.get('band')) && (!params.get('region') || beach.area.includes(params.get('region')!)) && (params.get('needs') !== '1' || beach.needsVolunteers.flag)) ?? [];
-  const sections = [['trends', 'Trends'], ['cleanup', 'Cleanup'], ['participation', 'Participation'], ['evidence', 'Evidence'], ['wildlife', 'Wildlife']];
+  const sections = [['trends', 'Trends'], ['cleanup', 'Cleanup'], ['participation', 'Participation'], ['evidence', 'Evidence'], ['wildlife', 'Marine Life']];
   const changeFilter = (key: string, value: string) => setParams(previous => {
     const next = new URLSearchParams(previous);
     if (value) next.set(key, value); else next.delete(key);
@@ -99,7 +99,7 @@ export default function LiveInsightsScreen() {
       {['trends', 'cleanup', 'cleanup-history', 'participation', 'evidence', 'wildlife'].includes(topic) && <div className="filter-chips" aria-label="Insight topics" style={{ margin: 0 }}>{sections.map(([id, label]) => <button key={id} aria-pressed={topic === id || (id === 'cleanup' && topic === 'cleanup-history')} onClick={() => nav('/insights/' + id)}>{label}</button>)}</div>}
       {!topic && <>
         <SummaryCard eyebrow={`Last 90 days · ${data.beaches.length} pilot beaches`} value={data.overview.countedReports} description="counted reports shape the beach ratings">
-          <SummaryStats items={[{ label: 'Cleanups', value: data.overview.recordedCleanups }, { label: 'Joined', value: data.overview.joinedParticipants }, { label: 'Need help', value: data.overview.needsVolunteers }]} />
+          <SummaryStats items={[{ label: 'Cleanups', value: data.overview.recordedCleanups }, { label: 'Joined Participants', value: data.overview.joinedParticipants }, { label: 'Need help', value: data.overview.needsVolunteers }]} />
         </SummaryCard>
         <p className="eyebrow">Beach updates</p>
         {updates.map(beach => <WhiteCard key={beach.id} className="update-card"><button className="coastal-link-row" onClick={() => nav('/insights/trends/' + beach.id)}><span className="row-thumb"><SpeciesIcon glyph="grass" size={28} /></span><span className="grow"><strong>{beach.name}</strong><span className="update-bands"><SeverityBadge band={beach.trend.previousBand} /><span>→</span><SeverityBadge band={beach.trend.currentBand} /></span><small>Last 30 days · counted reports</small></span><span>›</span></button></WhiteCard>)}
@@ -111,7 +111,7 @@ export default function LiveInsightsScreen() {
           <ActionTile title="Cleanup" subtitle="Results" icon={<Check color={C.navy} />} onClick={() => nav('/insights/cleanup')} />
           <ActionTile title="Participation" subtitle="Who joined" icon={<CommunityIcon size={19} />} onClick={() => nav('/insights/participation')} />
           <ActionTile title="Evidence" subtitle="Reports and freshness" icon={<Info size={19} />} onClick={() => nav('/insights/evidence')} />
-          <ActionTile title="Wildlife" subtitle="Species nearby" icon={<SpeciesIcon glyph="grass" size={20} />} onClick={() => nav('/insights/wildlife')} />
+          <ActionTile title="Marine Life" subtitle="Species nearby" icon={<SpeciesIcon glyph="grass" size={20} />} onClick={() => nav('/insights/wildlife')} />
           <ActionTile title="Volunteers" subtitle="Beaches needing help" icon={<CommunityIcon size={19} />} onClick={() => nav('/community/needs-volunteers')} />
         </div>
       </>}

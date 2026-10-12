@@ -19,7 +19,7 @@ export type PersonalInsights = {
     aiAssisted: boolean;
     facts?: {
       category?: string; reportCount?: number; riskType?: string; speciesGroups?: string[];
-      beachName?: string; intervalDays?: number | null; daysSinceCleanup?: number; followUpStatus?: string;
+      beachId?: string; beachName?: string; intervalDays?: number | null; daysSinceCleanup?: number; followUpStatus?: string;
       includedCleanupCount?: number; remainingCleanupCount?: number; remainingRate?: number;
     };
   }[];

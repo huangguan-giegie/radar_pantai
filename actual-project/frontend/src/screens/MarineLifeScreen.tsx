@@ -111,7 +111,7 @@ export default function MarineLifeScreen() {
         onClick={() => nav("/credits")}
         style={{ textAlign: "center", color: C.navy }}
       >
-        Species & habitat photo credits
+        Species & Habitat Photo Credits
       </button>
     </CoastalPage>
   );
@@ -140,9 +140,9 @@ export function SpeciesScreen() {
       <div className="coastal-page measure species-body">
         <div>
           <h1>{s.name}</h1>
-          <p className="subtle" style={{ fontStyle: "italic" }}>
+          {s.subtitle && <p className="subtle" style={{ fontStyle: "italic" }}>
             {s.subtitle}
-          </p>
+          </p>}
           {media?.imageCaption && <p className="coastal-footnote">{media.imageCaption}</p>}
           <p style={{ fontSize: 17, lineHeight: 1.5 }}>{s.intro}</p>
           <p className="coastal-footnote">{s.evidence}</p>
@@ -317,7 +317,7 @@ export function HabitatScreen() {
           </a>
         ))}
       </WhiteCard>
-      <button onClick={() => nav("/credits")}>Habitat photo credits</button>
+      <button onClick={() => nav("/credits")}>Habitat Photo Credits</button>
     </CoastalPage>
   );
 }
@@ -382,7 +382,7 @@ export function MarineAreaScreen() {
             {s.label} ↗
           </a>
         ))}
-        <button onClick={() => nav("/credits")}>Photo credits</button>
+        <button onClick={() => nav("/credits")}>Photo Credits</button>
       </WhiteCard>
       <PrimaryButton onClick={() => nav(withBeach("/map?layer=bio&region=" + r.id, beachId))}>
         View Biodiversity Map
@@ -412,7 +412,7 @@ export function MarineAreaScreen() {
             style={{ marginTop: 16 }}
             onClick={() => setWhy(false)}
           >
-            Got It
+            Understood
           </PrimaryButton>
         </Sheet>
       )}

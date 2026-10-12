@@ -46,7 +46,7 @@
     "credit": "Specimen photo · Moh H. H. & Chong V. C. (2009), Figure 1 · CC BY 4.0 via Plazi / Zenodo · resized; displayed crop",
     "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "imageAlt": "The male holotype of Thalassina kelanang photographed from above against a blue background, from the original species description.",
-    "imageCaption": "Holotype specimen · original species study, 2009"
+    "imageCaption": "Holotype specimen"
   },
   "grubeulepis-malayensis": {
     "image": "/images/coastal/grubeulepis-malayensis.svg",
@@ -55,6 +55,6 @@
     "credit": "Original schematic · Radar Sampah · CC BY 4.0 · based on the morphology described by Nishi (2001); not a photograph or an identification guide",
     "imageLicenseUrl": "https://creativecommons.org/licenses/by/4.0/",
     "imageAlt": "A simplified dorsal schematic of a scaleworm with paired overlapping scales and lateral bristles, based on the description of Grubeulepis malayensis; not a photograph.",
-    "imageCaption": "Scientific schematic · not a photograph or identification guide"
+    "imageCaption": "Scientific schematic"
   }
 }

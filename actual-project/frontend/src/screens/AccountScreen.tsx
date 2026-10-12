@@ -364,7 +364,7 @@ export default function AccountScreen() {
             style={{ marginTop: 16 }}
             onClick={() => setPrivacy(false)}
           >
-            Got It
+            Understood
           </PrimaryButton>
         </Sheet>
       )}
