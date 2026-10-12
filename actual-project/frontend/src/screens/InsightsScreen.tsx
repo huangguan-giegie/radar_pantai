@@ -131,24 +131,38 @@ function WildlifeCoverage({ beaches }: { beaches: InsightsData['wildlife'] }) {
   const { data: predictions, loading, error, refresh } = useAsyncData<WildlifeModelResponse | null>(
     () => iteration3Request<WildlifeModelResponse>('/insights/wildlife'), [], null,
   );
+  // The wildlife endpoint is authoritative for evidence type. The /insights
+  // summary has a legacy species list and may classify OBIS-modelled MVP
+  // beaches as published references if used to count or render species.
+  const loaded = !loading && !error && predictions !== null;
   const byBeach = new Map((predictions?.beaches ?? []).map(row => [row.beachId, row]));
-  const publishedCount = beaches.filter(beach => beach.species.length > 0).length;
-  const modelledCount = beaches.filter(beach => !beach.species.length && (byBeach.get(beach.beachId)?.species.length ?? 0) > 0).length;
-  const unavailableCount = beaches.length - publishedCount - modelledCount;
+  const hasSource = (beachId: string, status: string) => {
+    const row = byBeach.get(beachId);
+    return row?.sourceStatus === status && row.species.length > 0;
+  };
+  const curatedCount = loaded ? beaches.filter(beach => hasSource(beach.beachId, 'published_reference')).length : 0;
+  const modelledCount = loaded ? beaches.filter(beach => hasSource(beach.beachId, 'modelled')).length : 0;
+  const unavailableCount = loaded ? beaches.length - curatedCount - modelledCount : 0;
   return <>
-    <SummaryCard eyebrow="Wildlife coverage · published & modelled context" value={beaches.length}
-      description={`beaches · ${publishedCount} with published references · ${modelledCount} with modelled context`} />
-    <p className="coastal-footnote">All registered beaches are listed. Published reference species and coordinate-based nearby marine-grid model suggestions are separate kinds of evidence; neither confirms sightings at these beaches.</p>
-    {loading && <p className="coastal-footnote">Loading nearby marine-grid context for beaches without published references…</p>}
-    {error && <DataUnavailable title="Modelled biodiversity temporarily unavailable" retry={() => { void refresh(); }}>Published references are still shown. The modelled suggestions could not be loaded.</DataUnavailable>}
-    {!loading && unavailableCount > 0 && <p className="coastal-footnote">{unavailableCount} {unavailableCount === 1 ? 'beach has' : 'beaches have'} no currently available species suggestion. This is not evidence that wildlife is absent.</p>}
+    <SummaryCard eyebrow="Wildlife coverage · curated references & OBIS model" value={beaches.length}
+      description={loaded
+        ? `beaches · ${curatedCount} with curated reference data · ${modelledCount} with OBIS-derived model context`
+        : loading ? 'beaches · checking wildlife sources…' : 'beaches · wildlife source data unavailable'} />
+    <p className="coastal-footnote">All registered beaches are listed. Curated coastal references provide background ecological information; OBIS-derived model suggestions use frozen historical scores from nearby marine grids. Neither confirms species sightings or wildlife impact at individual beaches.</p>
+    {loading && <p className="coastal-footnote">Loading wildlife evidence and OBIS-derived model context…</p>}
+    {!loading && !loaded && <DataUnavailable title="Wildlife source data temporarily unavailable" retry={() => { void refresh(); }}>The wildlife endpoint could not be loaded. Missing API data is not evidence that a beach has no species.</DataUnavailable>}
+    {loaded && unavailableCount > 0 && <p className="coastal-footnote">{unavailableCount} {unavailableCount === 1 ? 'beach has' : 'beaches have'} no currently available species suggestion. This is not evidence that wildlife is absent.</p>}
     {beaches.map(beach => {
-      const model = byBeach.get(beach.beachId);
-      const isPublished = beach.species.length > 0;
-      const names = isPublished ? beach.species : model?.species.map(item => item.name) ?? [];
-      const contextLabel = isPublished ? 'Published coastal reference' : names.length
-        ? `Modelled marine-grid context${model?.coordinateContext ? ` · ${model.coordinateContext.distanceKm.toFixed(1)} km reference distance` : ''}`
-        : 'Species context not yet available';
+      const model = loaded ? byBeach.get(beach.beachId) : undefined;
+      const sourceStatus = model?.sourceStatus;
+      const hasValidEvidence = sourceStatus === 'published_reference' || sourceStatus === 'modelled';
+      const names = hasValidEvidence ? model?.species.map(item => item.name) ?? [] : [];
+      const contextLabel = !loaded
+        ? loading ? 'Checking wildlife sources…' : 'Wildlife source data temporarily unavailable'
+        : names.length && sourceStatus === 'published_reference' ? 'Curated coastal reference'
+        : names.length && sourceStatus === 'modelled'
+          ? `OBIS-derived marine-grid model${model?.coordinateContext ? ` · ${model.coordinateContext.distanceKm.toFixed(1)} km reference distance` : ''}`
+          : 'Species context not yet available';
       const habitat = beach.habitat === 'Biodiversity information not yet available'
         ? 'Marine habitat not individually documented' : beach.habitat;
       return <button className="wildlife-beach-card" key={beach.beachId} onClick={() => nav('/beach/' + beach.beachId)}>
@@ -156,10 +170,10 @@ function WildlifeCoverage({ beaches }: { beaches: InsightsData['wildlife'] }) {
         <span className="wildlife-species">{names.length ? names.map(name => {
           const photo = speciesPhoto(name);
           return <span key={name} className={photo ? 'has-photo' : undefined}>{photo && <img src={photo} alt="" loading="lazy" />}{name}</span>;
-        }) : <span>{loading ? 'Checking model…' : 'No species suggestion available'}</span>}</span>
+        }) : <span>{loading ? 'Checking wildlife sources…' : loaded ? 'No species suggestion available' : 'Wildlife data unavailable'}</span>}</span>
       </button>;
     })}
-    <p className="coastal-footnote">Model suggestions use frozen historical OBIS-derived scores from a marine grid within 15 km of each supplied reference coordinate. They are not occurrence probabilities, verified observations, or evidence of wildlife impact. Open a beach for litter and habitat context; modelled species here are nearby-grid suggestions only.</p>
+    <p className="coastal-footnote">Curated references may describe coastal habitats or broader regions rather than sightings at the named beach. Model suggestions use frozen historical OBIS-derived scores from a marine grid within 15 km of each supplied reference coordinate. They are not occurrence probabilities or verified local observations.</p>
   </>;
 }
 
