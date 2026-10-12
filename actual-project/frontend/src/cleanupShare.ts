@@ -38,7 +38,7 @@ export async function createCleanupShareImage(cleanup: CleanupAction, theme: Cle
   } catch { /* The saved record still exports when a decorative photo fails. */ }
   ctx.fillStyle = '#b8ff36';
   ctx.font = '700 28px sans-serif';
-  ctx.fillText('RADAR SAMPAH', 72, 76);
+  ctx.fillText('RADAR PANTAI', 72, 76);
   ctx.fillStyle = '#ffffff';
   ctx.font = '700 50px sans-serif';
   ctx.fillText('I did a beach cleanup', 72, 355);

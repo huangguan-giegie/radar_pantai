@@ -57,7 +57,7 @@ export default function BackgroundScreen({ intro = false }: { intro?: boolean })
           <span style={{ width: 26, height: 26, borderRadius: 13, background: C.deep, display: 'grid', placeItems: 'center', flex: 'none' }}>
             <RadarMark size={18} />
           </span>
-          <span style={{ fontSize: 13.5, fontWeight: 680, color: C.ink3 }}>Radar Sampah</span>
+          <span style={{ fontSize: 13.5, fontWeight: 680, color: C.ink3 }}>Radar Pantai</span>
           <span
             style={{
               marginLeft: 'auto',
@@ -89,12 +89,12 @@ export default function BackgroundScreen({ intro = false }: { intro?: boolean })
             <figcaption>Beach cleanup volunteers · public domain · Wikimedia Commons</figcaption>
           </figure>
           <section className="coastal-summary" aria-labelledby="about-purpose">
-            <p className="eyebrow">Radar Sampah</p>
+            <p className="eyebrow">Radar Pantai</p>
             <h2 id="about-purpose" style={{ color: 'white', fontSize: 24, margin: 0 }}>Beach litter & marine biodiversity in Malaysia</h2>
             <p style={{ fontSize: 14, lineHeight: 1.5, color: '#ffffffcc' }}>
-              Marine litter can harm marine life and coastal habitats. Radar Sampah connects beach litter reports with marine biodiversity awareness, helping people understand our coast and take action together.
+              Marine litter can harm marine life and coastal habitats. Radar Pantai connects beach litter reports with marine biodiversity awareness, helping people understand our coast and take action together.
             </p>
-            <p style={{ fontSize: 14, lineHeight: 1.5, color: '#ffffffcc' }}>Sampah means rubbish in Malay. Explore freely, and use an anonymous ID to contribute.</p>
+            <p style={{ fontSize: 14, lineHeight: 1.5, color: '#ffffffcc' }}>Pantai means beach in Malay. Explore freely, and use an anonymous ID to contribute.</p>
             <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {[
                 'Report litter with a photo. Review AI suggestions before submitting.',

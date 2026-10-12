@@ -27,7 +27,7 @@ from sqlalchemy import insert, select  # noqa: E402
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a Radar Sampah activity moderator.")
+    parser = argparse.ArgumentParser(description="Create a Radar Pantai activity moderator.")
     parser.add_argument("--participant-id", help="Optional unused four-digit participant ID")
     args = parser.parse_args()
 

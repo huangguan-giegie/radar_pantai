@@ -1,4 +1,4 @@
-"""Optional, privacy-bounded adapter for the Radar Sampah litter flow."""
+"""Optional, privacy-bounded adapter for the Radar Pantai litter flow."""
 
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ def recognise_litter(image_url: str, category_hint: str | None, categories: set[
                 }
         except (URLError, TimeoutError, ValueError, OSError):
             pass
-    # Radar Sampah never contacts a provider by default. This keeps demo image URLs local.
+    # Radar Pantai never contacts a provider by default. This keeps demo image URLs local.
     selected = next((category for category in categories if category.lower() == (category_hint or "").lower()), sorted(categories)[0])
     return {
         "status": "demo_fallback",

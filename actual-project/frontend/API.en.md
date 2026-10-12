@@ -1,4 +1,4 @@
-# Radar Sampah — Backend API Specification v1 (Iteration 1)
+# Radar Pantai — Backend API Specification v1 (Iteration 1)
 
 > **Historical Iteration 1 specification.** The current source of truth is
 > [`API_ITERATION2.md`](../backend/API_ITERATION2.md) and [`openapi.yaml`](./openapi.yaml).

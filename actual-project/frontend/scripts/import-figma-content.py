@@ -165,7 +165,7 @@ result={'species':species,'beaches':beaches,'habitats':habitats,'regions':region
 cfg=['parallel','parallel-max = 4']
 for dest,url in downloads.items():
     if (FRONT/dest).exists() and (FRONT/dest).stat().st_size>1000:continue
-    cfg += ['location','fail','connect-timeout = 12','max-time = 45','user-agent = "RadarSampahPrototype/1.0"','url = '+json.dumps(url),'output = '+json.dumps(dest),'next']
+    cfg += ['location','fail','connect-timeout = 12','max-time = 45','user-agent = "RadarPantaiPrototype/1.0"','url = '+json.dumps(url),'output = '+json.dumps(dest),'next']
 if cfg[-1]=='next':cfg.pop()
 (ROOT/'photo-downloads.txt').write_text('\n'.join(cfg),encoding='utf-8')
 print(json.dumps({'frames':len(frames),'species':len(species),'beaches':len(beaches),'habitats':len(habitats),'regions':len(regions),'photo_downloads':len(downloads)},ensure_ascii=False))

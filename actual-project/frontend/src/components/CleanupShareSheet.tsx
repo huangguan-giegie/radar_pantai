@@ -26,12 +26,12 @@ export function CleanupShareSheet({ cleanup, onClose }: { cleanup: CleanupAction
     if (!preview) return;
     const link = document.createElement('a');
     link.href = preview.url;
-    link.download = 'radar-sampah-cleanup-' + cleanup.id + '.png';
+    link.download = 'radar-pantai-cleanup-' + cleanup.id + '.png';
     link.click();
   };
   const share = async () => {
     if (!preview || busy) return;
-    const file = new File([preview.blob], 'radar-sampah-cleanup.png', { type: 'image/png' });
+    const file = new File([preview.blob], 'radar-pantai-cleanup.png', { type: 'image/png' });
     if (!navigator.canShare?.({ files: [file] })) { download(); return; }
     setBusy(true);
     try { await navigator.share({ files: [file], title: 'My cleanup at ' + cleanup.beachName }); }

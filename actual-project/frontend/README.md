@@ -1,4 +1,4 @@
-# Radar Sampah Frontend
+# Radar Pantai Frontend
 
 Mobile-first frontend built with React, Vite and TypeScript.
 

@@ -1,5 +1,5 @@
 -- ============================================================================
--- Radar Sampah — seeds.sql
+-- Radar Pantai — seeds.sql
 --
 -- Every value copied out of frontend/src/mockData.ts and frontend/src/sources.ts.
 -- Nothing added, nothing rounded, nothing invented.

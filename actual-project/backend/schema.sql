@@ -1,5 +1,5 @@
 -- ============================================================================
--- Radar Sampah — schema.sql
+-- Radar Pantai — schema.sql
 --
 -- Current app:create_app() contract, including account profiles and attendance.
 -- PostgreSQL. Keep this file aligned with the deployed database.

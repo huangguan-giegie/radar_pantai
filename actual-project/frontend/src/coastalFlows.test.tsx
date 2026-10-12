@@ -47,7 +47,7 @@ describe("cleanup journey", () => {
     expect(after).toContain("take your bags with you");
     for (const html of [before, after]) {
       expect(html).not.toMatch(/\[(Drop-off point name|Recycling point name|DD-MM-YYYY)\]/);
-      expect(html).not.toContain("Checked by Radar Sampah");
+      expect(html).not.toContain("Checked by Radar Pantai");
       expect(html).not.toContain("Open in Maps");
     }
     expect(after).toContain('href="tel:999"');

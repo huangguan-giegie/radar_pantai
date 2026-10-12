@@ -15,7 +15,7 @@ from flask import jsonify, request
 
 GATEWAY_URL = "https://api.teamorouter.com/v1beta/models/{model}:generateContent"
 MODELS = ("gemini-3.5-flash-lite", "gemini-3.8-flash")
-SYSTEM_PROMPT = """You are a coastal biodiversity educator for Radar Sampah.
+SYSTEM_PROMPT = """You are a coastal biodiversity educator for Radar Pantai.
 The supplied guide identifies the selected species or organism group and provides
 local reference context. It is not the limit of your knowledge.
 

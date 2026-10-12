@@ -1,4 +1,4 @@
-"""Radar Sampah API for the Iteration 1 frontend and Iteration 2 services.
+"""Radar Pantai API for the Iteration 1 frontend and Iteration 2 services.
 
 The routes and response shapes in this module follow frontend/API.md and
 frontend/API.en.md. Report coordinates and photo storage keys are private
@@ -1876,7 +1876,7 @@ def create_app(
 
     @application.get("/")
     def root():
-        return jsonify({"project": "Radar Sampah", "status": "ready", "apiVersion": "3.0.0"})
+        return jsonify({"project": "Radar Pantai", "status": "ready", "apiVersion": "3.0.0"})
 
     @application.get("/health")
     def health():

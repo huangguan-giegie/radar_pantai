@@ -185,7 +185,7 @@ export default function App() {
                                   ? 'Account'
                                   : pathname === '/home'
                                     ? 'Home'
-                                    : 'Radar Sampah';
+                                    : 'Radar Pantai';
   const pageTitle = pathname.startsWith('/insights') ? 'Beach Insights'
     : pathname.startsWith('/j/') ? 'Cleanup invitation'
     : pathname.startsWith('/species/') || pathname.startsWith('/model-species/') ? 'Species guide'
@@ -203,9 +203,9 @@ export default function App() {
   //
   // This is one page as far as the browser is concerned, so the title never
   // changes by itself. Without this, every open tab, every bookmark and every
-  // history entry would read "Radar Sampah" and none could be told apart.
+  // history entry would read "Radar Pantai" and none could be told apart.
   useEffect(() => {
-    document.title = `${pageTitle} · Radar Sampah`;
+    document.title = pageTitle === 'Radar Pantai' ? pageTitle : `${pageTitle} · Radar Pantai`;
   }, [pageTitle]);
 
   return (

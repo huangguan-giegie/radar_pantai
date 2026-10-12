@@ -1,4 +1,4 @@
-"""Packaged offline species-distribution inference for Radar Sampah."""
+"""Packaged offline species-distribution inference for Radar Pantai."""
 
 from .inference import ModelAreaError, ModelInputError, SpeciesDistributionModel
 
