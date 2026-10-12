@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { PersonalInsightCard } from './components/PersonalInsightCard';
 import { RecurrenceEvidence } from './components/RecurrenceEvidence';
+import { actionTitle } from './presentation';
 import type { PersonalInsights } from './iteration3Personal';
 
 const cleanup: PersonalInsights['sections'][number] = {
@@ -13,6 +14,12 @@ const cleanup: PersonalInsights['sections'][number] = {
 };
 
 describe('personal insights from the participant’s actual records', () => {
+  it('preserves AI, GPS, API and OBIS acronyms when formatting shared action labels', () => {
+    expect(actionTitle('start AI check')).toBe('Start AI Check');
+    expect(actionTitle('open GPS location')).toBe('Open GPS Location');
+    expect(actionTitle('view API and OBIS details')).toBe('View API and OBIS Details');
+  });
+
   it('distinguishes waiting for a follow-up from a confirmed same-day follow-up', () => {
     const pending = renderToStaticMarkup(<PersonalInsightCard section={cleanup} onNavigate={() => {}} />);
     expect(pending).toContain('5');
