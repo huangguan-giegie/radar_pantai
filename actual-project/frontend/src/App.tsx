@@ -19,6 +19,7 @@ import { guardStep, type ReportStep } from './flowRules';
 import { useAppBack } from './navigation';
 import { BackButton } from './components/ui';
 
+import SplashScreen from './screens/SplashScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import IdentityScreen from './screens/IdentityScreen';
 import HomeScreen from './screens/HomeScreen';
@@ -36,8 +37,7 @@ import MyReportsScreen from './screens/MyReportsScreen';
 import ReportDetailScreen from './screens/ReportDetailScreen';
 import AccountScreen from './screens/AccountScreen';
 import AdminAccessDeniedScreen from './screens/AdminAccessDeniedScreen';
-// Not lazy: the intro opens straight after the splash on a first visit, and a
-// loading gap there would flash an empty frame before the first real page.
+// Keep the short background page ready when opened from Home.
 import BackgroundScreen from './screens/BackgroundScreen';
 const CommunityScreen = lazy(() => import('./screens/CommunityScreen'));
 const EventScreen = lazy(() => import('./screens/EventScreen'));
@@ -231,7 +231,8 @@ export default function App() {
         {/* Public pages. Anyone can look at beach data without an account -
             that is the point of the project, and it is what makes the map
             worth sharing. Only FILING a report needs an identity. */}
-        <Route path="/" element={<Navigate to="/welcome" replace />} />
+        <Route path="/" element={<SplashScreen />} />
+        <Route path="/splash" element={<SplashScreen />} />
         <Route path="/background/intro" element={<Navigate to="/welcome" replace />} />
         <Route path="/welcome" element={<WelcomeScreen />} />
         <Route path="/identity" element={<IdentityScreen />} />

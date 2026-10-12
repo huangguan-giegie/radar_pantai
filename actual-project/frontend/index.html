@@ -9,9 +9,18 @@
   </head>
   <body>
     <div id="root">
-      <div id="boot-shell" role="status" aria-live="polite" style="min-height:100vh;display:grid;place-items:center;background:#0b2161;color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+      <div id="boot-shell" role="status" aria-live="polite" style="min-height:100vh;display:grid;place-items:center;background:radial-gradient(110% 90% at 50% 4%,#173d70 0%,#0a1e42 57%,#081739 100%);color:#fff;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:24px">
-          <div aria-hidden="true" style="width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:#0b2161;color:#b8ff36;font-weight:800;letter-spacing:.08em;box-shadow:0 14px 36px rgba(8,23,57,.18)">RS</div>
+          <svg aria-hidden="true" width="150" height="150" viewBox="0 0 150 150" fill="none" style="margin-bottom:20px">
+            <circle cx="75" cy="75" r="73" stroke="#b8ff36" stroke-opacity=".46" />
+            <circle cx="75" cy="75" r="52" stroke="#b8ff36" stroke-opacity=".25" />
+            <circle cx="75" cy="75" r="27" stroke="#b8ff36" stroke-opacity=".25" />
+            <path d="M75 2V148M2 75H148" stroke="#b8ff36" stroke-opacity=".10" />
+            <path d="M75 75V2A73 73 0 0 1 148 75Z" fill="#b8ff36" fill-opacity=".12" />
+            <circle cx="75" cy="75" r="4" fill="#b8ff36" />
+            <circle cx="48" cy="53" r="2" fill="#b8ff36" fill-opacity=".68" />
+            <circle cx="101" cy="93" r="2" fill="#b8ff36" fill-opacity=".68" />
+          </svg>
           <strong style="font-size:15px;letter-spacing:.14em">RADAR SAMPAH</strong>
           <p style="max-width:320px;font-size:14px;line-height:1.6;font-weight:650">REPORT LITTER. SUPPORT CLEANUPS. PROTECT MARINE LIFE.</p>
           <span style="font-size:13px;color:#d4e0ec">Loading…</span>

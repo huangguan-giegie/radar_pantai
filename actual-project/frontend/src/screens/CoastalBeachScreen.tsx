@@ -38,6 +38,7 @@ import { eventIsAvailable, useEventClock } from "../eventAvailability";
 import { StaticMap } from "../components/Visuals";
 import { beachPhoto } from "../visuals";
 import { beachMarineCards, type BeachWildlifeSpecies } from "../beachMarineLife";
+import "../styles/beach-detail-refinement.css";
 
 type BeachWildlife = { beachId: string; sourceStatus: string; species: BeachWildlifeSpecies[]; coordinateContext?: { distanceKm: number } | null };
 
@@ -72,7 +73,7 @@ export default function CoastalBeachScreen() {
     [beachId, reportsVersion],
     null,
   );
-  const { data: gallery } = useAsyncData(
+  const { data: gallery, loading: galleryLoading, error: galleryError, refresh: refreshGallery } = useAsyncData(
     () => (previewOnly ? Promise.resolve([]) : getLitterGallery(beachId)),
     [beachId, reportsVersion],
     [],
@@ -82,7 +83,7 @@ export default function CoastalBeachScreen() {
     [user?.participantId, reportsVersion],
     [],
   );
-  const { data: cleanup } = useAsyncData(
+  const { data: cleanup, loading: cleanupLoading, error: cleanupError, refresh: refreshCleanup } = useAsyncData(
     () =>
       previewOnly ? Promise.resolve(null) : fetchLatestCleanupForBeach(beachId),
     [beachId, reportsVersion],
@@ -152,11 +153,22 @@ export default function CoastalBeachScreen() {
   const hasWildlifeContext = wildlife?.beachId === beachId;
   const currentSpecies = hasWildlifeContext ? wildlife.species : [];
   const marineCards = beachMarineCards(beachId, currentSpecies);
-  const wildlifeEvidenceNote = hasWildlifeContext && wildlife?.sourceStatus === "modelled"
+  const wildlifeEvidenceNote = marineCards.some(card => card.modelled)
     ? "Species are suggested from OBIS marine-grid data around a nearby coastal reference. They provide context, not confirmed sightings at this beach."
-    : hasWildlifeContext && wildlife?.sourceStatus === "published_reference"
-      ? "Published coastal reference · not confirmed beach sightings"
-      : "Published coastal references from the map, not confirmed sightings at this beach";
+    : marineCards.some(card => card.published)
+      ? "Published coastal references provide context, not confirmed sightings at this beach."
+      : wildlifeLoading
+        ? "Marine life evidence is still loading."
+        : wildlifeError
+          ? "Marine life evidence could not be loaded. Retry the marine life section to check the available sources."
+          : `No published reference or modelled context is currently available for ${b.name}. This does not mean marine life is absent.`;
+  const lastReportLabel = detail?.lastReportedAt
+    ? 'Last reported ' + formatDate(detail.lastReportedAt)
+    : previewOnly
+      ? fixture?.reported ?? 'No recent report'
+      : detail?.lastReportedAt === null
+        ? 'No counted reports yet'
+        : 'Last report date unavailable';
   const goMap = () => {
     const mapParams = new URLSearchParams(region ? { region } : {});
     if (location.state?.fromMarineMap) { mapParams.set('marine', 'on'); mapParams.set('beach', beachId); }
@@ -188,34 +200,36 @@ export default function CoastalBeachScreen() {
       <div className="coastal-page measure beach-body">
         <WhiteCard>
           <div className="beach-band-header">
-            <p className="eyebrow">Litter Severity</p>
-            <div className="beach-report-meta">
-              <small>{b.validReports} active {b.validReports === 1 ? 'report' : 'reports'}</small>
-              <small>{detail?.lastReportedAt ? 'Last reported ' + formatDate(detail.lastReportedAt) : (fixture?.reported ?? 'No recent report')}</small>
+            <div className="beach-band-summary">
+              <p className="eyebrow">Litter Severity</p>
+              <div
+                className="beach-band-value"
+                style={{
+                  color:
+                    attention.hasBand && band ? SEVERITY[band].text : "#586070",
+                }}
+              >
+                <strong>
+                  {attention.hasBand && band ? severityLabel(band).toUpperCase() : "Insufficient Data"}
+                </strong>
+                {attention.hasBand && band && (
+                  <BandMeter
+                    level={
+                      (detail?.band ??
+                        ["Low", "Moderate", "High", "Severe"].indexOf(band) + 1) as
+                        0 | 1 | 2 | 3 | 4
+                    }
+                    tone={
+                      band.toLowerCase() as "low" | "moderate" | "high" | "severe"
+                    }
+                  />
+                )}
+              </div>
             </div>
-          </div>
-          <div
-            className="beach-band-value"
-            style={{
-              color:
-                attention.hasBand && band ? SEVERITY[band].text : "#586070",
-            }}
-          >
-            <strong>
-              {attention.hasBand && band ? severityLabel(band).toUpperCase() : "Insufficient Data"}
-            </strong>
-            {attention.hasBand && band && (
-              <BandMeter
-                level={
-                  (detail?.band ??
-                    ["Low", "Moderate", "High", "Severe"].indexOf(band) + 1) as
-                    0 | 1 | 2 | 3 | 4
-                }
-                tone={
-                  band.toLowerCase() as "low" | "moderate" | "high" | "severe"
-                }
-              />
-            )}
+            <div className="beach-report-meta" aria-label="Report activity">
+              <small>{b.validReports} active {b.validReports === 1 ? 'report' : 'reports'}</small>
+              <small>{lastReportLabel}</small>
+            </div>
           </div>
           {!attention.hasBand && (
             <p className="coastal-footnote">{attention.detail}</p>
@@ -256,17 +270,11 @@ export default function CoastalBeachScreen() {
                       <SpeciesPicture image={item.image} name={item.name} />
                       <strong>{item.name}</strong>
                       {item.scientificName && item.scientificName !== item.name && <small><em>{item.scientificName}</em></small>}
-                      {item.referencePlace && <small>Reference area · {item.referencePlace}</small>}
                     </button>
                     <div className="marine-source-labels">
                       {item.published && <span>Published reference</span>}
                       {item.modelled && <span className="model-source">OBIS · Modelled nearby</span>}
                     </div>
-                    {item.image && (
-                      <a href={item.creditsUrl} target="_blank" rel="noopener noreferrer">
-                        Image credit & licence ↗
-                      </a>
-                    )}
                   </div>
               ))}
             </div>
@@ -328,7 +336,13 @@ export default function CoastalBeachScreen() {
             Litter Gallery
           </SectionHeading>
           <p className="subtle">Public reports from this beach</p>
-          {gallery.length ? (
+          {galleryLoading ? (
+            <p className="coastal-footnote" role="status">Loading public report photos…</p>
+          ) : galleryError ? (
+            <DataUnavailable title="Could not load litter photos" retry={() => { void refreshGallery(); }}>
+              Please try again to load the public report photos for this beach.
+            </DataUnavailable>
+          ) : gallery.length ? (
             <div className="beach-gallery">
               {gallery.map((g) => (
                 <button
@@ -377,7 +391,16 @@ export default function CoastalBeachScreen() {
             </div>
           )}
         </section>
-        {cleanup && (
+        {!previewOnly && cleanupLoading ? (
+          <WhiteCard>
+            <p className="eyebrow">Latest Recorded Cleanup</p>
+            <p className="subtle" role="status">Loading cleanup records…</p>
+          </WhiteCard>
+        ) : cleanupError ? (
+          <DataUnavailable title="Could not load the latest cleanup" retry={() => { void refreshCleanup(); }}>
+            Please try again to view the latest recorded cleanup for this beach.
+          </DataUnavailable>
+        ) : cleanup && (
           <WhiteCard>
             <p className="eyebrow">Latest Recorded Cleanup</p>
             <h2>{formatDate(cleanup.createdAt)}</h2>

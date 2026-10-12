@@ -1,0 +1,130 @@
+/* Component CSS is loaded before the global .screen reset in main.tsx. */
+.screen.splash-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: calc(var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 32px);
+  background: radial-gradient(110% 90% at 50% 4%, #173d70 0%, #0a1e42 57%, #081739 100%);
+  color: #f7f8fa;
+  text-align: center;
+}
+
+.splash-body {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 390px;
+  min-height: 410px;
+  padding-block: 32px 44px;
+}
+
+.splash-radar {
+  position: relative;
+  width: clamp(150px, 44vw, 190px);
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid rgba(184, 255, 54, .46);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184, 255, 54, .09), transparent 65%);
+}
+
+.splash-radar-ring {
+  position: absolute;
+  inset: 15%;
+  border: 1px solid rgba(184, 255, 54, .25);
+  border-radius: 50%;
+}
+
+.splash-radar-ring-inner { inset: 32%; }
+.splash-radar-axis { position: absolute; background: rgba(184, 255, 54, .10); }
+.splash-radar-axis-vertical { top: 0; bottom: 0; left: 50%; width: 1px; }
+.splash-radar-axis-horizontal { left: 0; right: 0; top: 50%; height: 1px; }
+.splash-radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 270deg, transparent 0deg, rgba(184, 255, 54, .23) 88deg, transparent 90deg);
+}
+
+.splash-radar-centre {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  border-radius: 50%;
+  background: #b8ff36;
+  box-shadow: 0 0 18px 3px rgba(184, 255, 54, .55);
+}
+
+.splash-radar-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(184, 255, 54, .68);
+}
+.splash-radar-dot-one { left: 32%; top: 35%; }
+.splash-radar-dot-two { left: 67%; top: 62%; }
+
+.splash-screen h1 {
+  margin: 0;
+  font-size: 31px;
+  font-weight: 650;
+  line-height: 1.2;
+  letter-spacing: -.5px;
+}
+
+.splash-tagline {
+  max-width: 320px;
+  margin: 14px 0 0;
+  color: #d2dce9;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.85;
+  letter-spacing: .13em;
+  text-wrap: balance;
+}
+
+.splash-continue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 48px;
+  margin-top: 32px;
+  padding: 12px 26px;
+  border: 1px solid rgba(232, 238, 245, .4);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .06);
+  color: #f7f8fa;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: center;
+}
+.splash-continue:hover { background: rgba(255, 255, 255, .13); }
+.splash-continue:focus-visible { outline: 3px solid #b8ff36; outline-offset: 5px; }
+.splash-continue:active { background: rgba(255, 255, 255, .2); }
+
+.splash-footer {
+  max-width: 350px;
+  flex-shrink: 0;
+  color: #b6c4d8;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.8;
+  letter-spacing: .09em;
+  text-wrap: balance;
+}
+
+@keyframes splash-radar-scan { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: no-preference) {
+  .splash-radar-sweep { animation: splash-radar-scan 5s linear 1; }
+}

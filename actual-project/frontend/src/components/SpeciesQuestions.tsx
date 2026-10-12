@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { askSpeciesQuestion } from "../api";
 import { Sheet, SummaryCard } from "./CoastalUI";
 import { PrimaryButton } from "./ui";
+import { actionTitle } from "../presentation";
 
 type SpeciesGuide = {
   id: string;
@@ -34,7 +35,7 @@ export function SpeciesQuestions({ species }: { species: SpeciesGuide }) {
         sequence.current += 1;
         setReply({ question: text, text: species.answers[index].text, custom: false });
       }}>
-        <span className="grow" style={{ fontSize: 14 }}>{text}</span><span>→</span>
+        <span className="grow" style={{ fontSize: 14, fontWeight: 650 }}>{actionTitle(text)}</span><span>→</span>
       </button>)}
       <form onSubmit={event => { event.preventDefault(); if (question.trim() && !reply?.loading) void ask(question.trim()); }}>
         <label htmlFor="species-custom-question">Your own question</label>

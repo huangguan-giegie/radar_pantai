@@ -31,12 +31,17 @@ export function PersonalInsightCard({ section, onNavigate }: {
     </> : section.id === 'persistent_litter' && facts ? <>
       <p className="personal-insight-fact">{facts.category}</p><p className="subtle">{marineLifeCopy(section.text || `Remained above Small in ${facts.remainingCleanupCount} of ${facts.includedCleanupCount} eligible cleanups.`)}</p>
     </> : <p className="subtle">{marineLifeCopy(section.text)}</p>}
-    {section.id !== 'since_cleanup' && section.sources.map(source => <p className="coastal-footnote personal-source" key={source.url}>
-      {source.url.startsWith('/') ? <button onClick={() => onNavigate(source.url)}>{marineLifeCopy(source.label)}</button>
-        : <a href={source.url} target="_blank" rel="noreferrer">{marineLifeCopy(source.label)}</a>}
-      {section.reviewDate && ' · Reviewed ' + formatDate(section.reviewDate)}
-    </p>)}
+    {section.id !== 'since_cleanup' && section.sources.map(source => {
+      // Personal totals include Counted reports that were later resolved; the
+      // current Counted tab hides those, so own-report sources open all history.
+      const sourcePath = litter && source.url.split('?')[0] === '/reports' ? '/reports' : source.url;
+      return <p className="coastal-footnote personal-source" key={source.url}>
+        {source.url.startsWith('/') ? <button onClick={() => onNavigate(sourcePath)}>{marineLifeCopy(source.label)}</button>
+          : <a href={source.url} target="_blank" rel="noreferrer">{marineLifeCopy(source.label)}</a>}
+        {section.reviewDate && ' · Reviewed ' + formatDate(section.reviewDate)}
+      </p>;
+    })}
     <LinkRow title={litter ? 'Review My Reports' : actionTitle(section.action.label)}
-      onClick={() => onNavigate(litter ? '/reports?tab=Counted' : section.action.path)} />
+      onClick={() => onNavigate(litter ? '/reports' : section.action.path)} />
   </WhiteCard>;
 }

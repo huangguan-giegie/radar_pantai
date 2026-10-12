@@ -18,6 +18,23 @@ function expectWithinViewport(labels: MapLabelRect[], width: number, height: num
   });
 }
 
+function expectNearAnchors(labels: (MapLabelRect & { id: string })[], points: MapLabelPoint[], maximum = 40) {
+  for (const label of labels) {
+    const anchor = points.find(item => item.id === label.id)!;
+    expect(anchor).toBeDefined();
+    const dx = Math.max(label.x - anchor.x, 0, anchor.x - label.x - label.width);
+    const dy = Math.max(label.y - anchor.y, 0, anchor.y - label.y - label.height);
+    expect(Math.hypot(dx, dy)).toBeLessThanOrEqual(maximum);
+  }
+}
+
+function offsetsFor(labels: (MapLabelRect & { id: string })[], points: MapLabelPoint[]) {
+  return new Map(labels.map(label => {
+    const anchor = points.find(item => item.id === label.id)!;
+    return [label.id, { x: label.x - anchor.x, y: label.y - anchor.y, width: label.width, height: label.height }];
+  }));
+}
+
 describe("marine photo tap targets", () => {
   it("keeps coastal photos clear of nearby controls and report counts on a small phone", () => {
     const obstacles = [
@@ -36,8 +53,8 @@ describe("marine photo tap targets", () => {
     }
     const labels = placeMapLabels([point('beach', 172, 214)],
       { width: 320, height: 262, obstacles: [...obstacles, ...photos], compact: true });
-    expect(labels).toHaveLength(1);
-    for (const photo of photos) expect(overlaps(labels[0], photo)).toBe(false);
+    expectNearAnchors(labels, [point('beach', 172, 214)]);
+    for (const label of labels) for (const photo of photos) expect(overlaps(label, photo)).toBe(false);
   });
 
   it("keeps edge photos visible without bringing offscreen or invalid records into the view", () => {
@@ -51,26 +68,38 @@ describe("marine photo tap targets", () => {
 });
 
 describe("map label placement", () => {
-  it("keeps all seven preferred beach names even among many nearby optional points", () => {
+  it("keeps all names when their nearby positions fit", () => {
+    const points = [point('a', 100, 140), point('b', 300, 140), point('c', 100, 340), point('d', 300, 340)];
+    const labels = placeMapLabels(points, { width: 402, height: 420 });
+    expect(labels.map(label => label.id)).toEqual(['a', 'b', 'c', 'd']);
+    expectWithinViewport(labels, 402, 420);
+    expectNearAnchors(labels, points);
+  });
+
+  it("prioritizes nearby names without repacking a crowded coast into distant rows", () => {
     const important = Array.from({ length: 7 }, (_, index) => point(`main-${index}`, 196 + index, 130 + index));
     const nearby = Array.from({ length: 20 }, (_, index) => point(`optional-${index}`, 190 + index, 135, false));
-    const labels = placeMapLabels([...nearby, ...important], { width: 402, height: 320 });
-    for (const { id } of important) expect(labels.some(label => label.id === id)).toBe(true);
+    const points = [...nearby, ...important];
+    const before = points.map(item => ({ ...item }));
+    const labels = placeMapLabels(points, { width: 402, height: 320 });
+    expect(labels.length).toBeGreaterThan(0);
+    expect(labels.length).toBeLessThan(points.length);
+    expect(labels.some(label => important.some(item => item.id === label.id))).toBe(true);
     expectWithinViewport(labels, 402, 320);
+    expectNearAnchors(labels, points);
+    // The layout returns only labels; it must leave every beach available to
+    // the caller for its geographic dot, search results and Beach List.
+    expect(points).toEqual(before);
   });
 
-  it("uses free space for close beach names without overlapping labels or controls", () => {
-    const obstacle = { x: 8, y: 8, width: 240, height: 42 };
-    const labels = placeMapLabels([
-      point("a", 30, 20), point("b", 31, 21), point("c", 32, 22),
-      point("d", 33, 23), point("e", 300, 260),
-    ], { width: 360, height: 300, obstacles: [obstacle] });
-    expect(labels).toHaveLength(5);
-    expectWithinViewport(labels, 360, 300);
-    labels.forEach(label => expect(overlaps(label, obstacle)).toBe(false));
+  it("does not use distant free space when all positions near a beach are blocked", () => {
+    const points = [point('blocked', 180, 150)];
+    const obstacle = { x: 110, y: 80, width: 140, height: 140 };
+    expect(placeMapLabels(points, { width: 402, height: 360, obstacles: [obstacle] })).toEqual([]);
+    expect(points).toHaveLength(1);
   });
 
-  it("retains all five North names around the controls on a 320px phone", () => {
+  it("keeps North names near their beaches and clear of controls on a 320px phone", () => {
     const important = [
       point("kuala-perlis", 161, 116, true, "Pantai Kuala Perlis"),
       point("cenang", 116, 126, true, "Pantai Cenang"),
@@ -86,23 +115,25 @@ describe("map label placement", () => {
     ];
     for (const height of [307, 307.55]) {
       const labels = placeMapLabels([...optional, ...important], { width: 320, height, obstacles });
-      for (const { id } of important) expect(labels.some(label => label.id === id)).toBe(true);
+      expect(labels.length).toBeGreaterThan(0);
       expectWithinViewport(labels, 320, height);
+      expectNearAnchors(labels, [...important, ...optional]);
       for (const label of labels) for (const obstacle of obstacles) expect(overlaps(label, obstacle)).toBe(false);
       expect(placeMapLabels([...important, ...optional].reverse(), { width: 320, height, obstacles })).toEqual(labels);
     }
   });
 
-  it("preserves two columns for long preferred names at narrow widths", () => {
+  it("keeps long names readable at narrow widths without forcing every name into columns", () => {
     const points = Array.from({ length: 6 }, (_, index) =>
       point(`long-${index}`, 160, 110 + index, true, `Pantai a longer beach name ${index}`));
     const labels = placeMapLabels(points, { width: 320, height: 170 });
-    expect(labels).toHaveLength(6);
+    expect(labels.length).toBeGreaterThan(0);
     expect(labels.every(label => label.width <= 149)).toBe(true);
     expectWithinViewport(labels, 320, 170);
+    expectNearAnchors(labels, points);
   });
 
-  it("shows all seven NSM names in compact layout below a wide region hint", () => {
+  it("uses compact nearby labels below the NSM hint without overlapping controls", () => {
     const points = [
       point("pantai-tanjung-gemuk", 130, 100, true, "Pantai Tanjung Gemuk"),
       point("pantai-cahaya-negeri", 145, 117, true, "Pantai Cahaya Negeri"),
@@ -119,47 +150,81 @@ describe("map label placement", () => {
       { x: 14, y: 249.41, width: 78.16, height: 36.14 },
     ];
     const labels = placeMapLabels(points, { width: 320, height: 308, obstacles, compact: true });
-    for (const { id } of points.filter(item => item.preferred)) expect(labels.some(label => label.id === id)).toBe(true);
+    expect(labels.length).toBeGreaterThan(0);
     expect(labels.every(label => label.height === 34)).toBe(true);
     expectWithinViewport(labels, 320, 308);
+    expectNearAnchors(labels, points);
     for (const label of labels) for (const obstacle of obstacles) expect(overlaps(label, obstacle)).toBe(false);
     expect(placeMapLabels([...points].reverse(), { width: 320, height: 308, obstacles, compact: true })).toEqual(labels);
   });
 
   it("does not clamp offscreen beaches onto the map after panning or zooming", () => {
-    const labels = placeMapLabels([
+    const points = [
       point("left", -9, 80), point("right", 409, 80),
       point("top", 80, -9), point("bottom", 80, 309),
       point("inside", 200, 150), point("near-edge", -7, 220),
-    ], { width: 400, height: 300 });
-    expect(labels.map(label => label.id)).toEqual(["inside", "near-edge"]);
+    ];
+    const labels = placeMapLabels(points, { width: 400, height: 300 });
+    expect(labels.some(label => label.id === 'inside')).toBe(true);
+    expect(labels.every(label => ['inside', 'near-edge'].includes(label.id))).toBe(true);
     expectWithinViewport(labels, 400, 300);
+    expectNearAnchors(labels, points);
   });
 
-  it("reserves the complete height of biodiversity photo labels", () => {
-    const labels = placeMapLabels([point("one", 100, 90), point("two", 103, 100), point("three", 200, 220)],
-      { width: 402, height: 480, labelHeight: 94, obstacles: [{ x: 300, y: 340, width: 80, height: 125 }] });
+  it("reserves 90px only for a photo label while ordinary beach labels use 48px", () => {
+    const points = [
+      { ...point('photo', 100, 160), labelHeight: 90 },
+      { ...point('plain', 300, 160), labelHeight: 48 },
+      { ...point('other', 100, 340), labelHeight: 48 },
+    ];
+    const labels = placeMapLabels(points, { width: 402, height: 420, labelHeight: 90 });
     expect(labels).toHaveLength(3);
-    expect(labels.every(label => label.height === 94)).toBe(true);
-    expectWithinViewport(labels, 402, 480);
+    expect(labels.find(label => label.id === 'photo')?.height).toBe(90);
+    expect(labels.filter(label => label.id !== 'photo').every(label => label.height === 48)).toBe(true);
+    expectWithinViewport(labels, 402, 420);
+    expectNearAnchors(labels, points);
+  });
+
+  it('gives a marine preview a nearby slot before ordinary preferred names', () => {
+    const points = [
+      { ...point('plain', 160, 100, true, 'A'), labelHeight: 48 },
+      { ...point('photo', 160, 160, true, 'B'), labelHeight: 90 },
+    ];
+    const labels = placeMapLabels(points, { width: 320, height: 260 });
+    expect(labels).toHaveLength(2);
+    expect(labels[0].id).toBe('photo');
+    expectWithinViewport(labels, 320, 260);
+    expectNearAnchors(labels, points);
+  });
+
+  it('does not cover another beach dot when placing a nearby name', () => {
+    const points = [point('main', 100, 140, true, 'A'), point('nearby', 100, 100, false, 'B')];
+    const labels = placeMapLabels(points, { width: 320, height: 300 });
+    expect(labels.some(label => label.id === 'main')).toBe(true);
+    for (const label of labels) for (const anchor of points) {
+      const dx = Math.max(label.x - anchor.x, 0, anchor.x - label.x - label.width);
+      const dy = Math.max(label.y - anchor.y, 0, anchor.y - label.y - label.height);
+      expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(6);
+    }
+    expectNearAnchors(labels, points);
   });
 
   it("is deterministic across input order and orders preferred labels by y then id", () => {
-    const points = [point("z", 200, 180, false), point("b", 200, 100), point("a", 201, 100), point("c", 202, 70), point("y", 203, 190, false)];
-    const first = placeMapLabels(points, { width: 402, height: 400 });
-    expect(placeMapLabels([...points].reverse(), { width: 402, height: 400 })).toEqual(first);
+    const points = [point("z", 300, 360, false), point("b", 300, 230), point("a", 100, 230), point("c", 100, 100), point("y", 100, 360, false)];
+    const first = placeMapLabels(points, { width: 402, height: 440 });
+    expect(placeMapLabels([...points].reverse(), { width: 402, height: 440 })).toEqual(first);
     expect(first.map(label => label.id)).toEqual(["c", "a", "b", "y", "z"]);
   });
 
   it("retains preferred names when only one label fits and skips unplaceable labels", () => {
-    const labels = placeMapLabels([point("optional", 60, 30, false), point("main", 60, 30)], { width: 120, height: 60 });
+    const labels = placeMapLabels([point("optional", 75, 70, false), point("main", 75, 70)], { width: 150, height: 80 });
     expect(labels.map(label => label.id)).toEqual(["main"]);
     expect(placeMapLabels([point("main", 60, 20)], { width: 120, height: 50 })).toEqual([]);
     expect(placeMapLabels([point("main", 60, 30)], { width: 120, height: 60, obstacles: [{ x: 0, y: 0, width: 120, height: 60 }] })).toEqual([]);
   });
 
   it("limits label dimensions and ignores invalid anchors without mutating inputs", () => {
-    const points = [point("short", 15, 15, true, "A"), point("long", 390, 230, true, "Pantai a very long beach name that cannot fit at full width"), point("bad", NaN, 100)];
+    const points = [point("short", 100, 100, true, "A"), point("long", 300, 230, true, "Pantai a very long beach name that cannot fit at full width"), point("bad", NaN, 100)];
     const before = points.map(row => ({ ...row }));
     const labels = placeMapLabels(points, { width: 402, height: 260 });
     expect(labels.map(label => label.width)).toEqual([100, 156]);
@@ -167,5 +232,106 @@ describe("map label placement", () => {
     expectWithinViewport(labels, 402, 260);
     expect(points).toEqual(before);
     expect(placeMapLabels(points, { width: NaN, height: 260 })).toEqual([]);
+  });
+});
+
+describe('stable map label offsets', () => {
+  it('translates existing names with their beaches instead of choosing new positions after a pan', () => {
+    const points = [point('a', 100, 150), point('b', 300, 150)];
+    const first = placeMapLabels(points, { width: 402, height: 360 });
+    expect(first).toHaveLength(2);
+    const previousOffsets = offsetsFor(first, points);
+    const before = Array.from(previousOffsets, ([id, offset]) => [id, { ...offset }]);
+    const moved = points.map(item => ({ ...item, x: item.x + 14, y: item.y + 20 }));
+    const next = placeMapLabels(moved, { width: 402, height: 360, previousOffsets });
+    expect(next).toEqual(first.map(label => ({ ...label, x: label.x + 14, y: label.y + 20 })));
+    expect(Array.from(previousOffsets)).toEqual(before);
+    expectWithinViewport(next, 402, 360);
+  });
+
+  it('hides a cached label at the viewport edge and restores the same offset when its beach returns', () => {
+    const points = [point('a', 200, 150)];
+    const first = placeMapLabels(points, { width: 402, height: 320 });
+    expect(first).toHaveLength(1);
+    const previousOffsets = offsetsFor(first, points);
+    // The point is still inside the map, but its original label extends left of it.
+    const atEdge = [{ ...points[0], x: 20 }];
+    expect(placeMapLabels(atEdge, { width: 402, height: 320, previousOffsets })).toEqual([]);
+    expect(placeMapLabels(points, { width: 402, height: 320, previousOffsets })).toEqual(first);
+  });
+
+  it('hides a cached label behind a control without jumping it into another free slot', () => {
+    const points = [point('a', 200, 150)];
+    const first = placeMapLabels(points, { width: 402, height: 320 });
+    const previousOffsets = offsetsFor(first, points);
+    expect(first).toHaveLength(1);
+    const obstacle = { x: first[0].x, y: first[0].y, width: 12, height: 12 };
+    expect(placeMapLabels(points, { width: 402, height: 320, previousOffsets, obstacles: [obstacle] })).toEqual([]);
+    expect(placeMapLabels(points, { width: 402, height: 320, previousOffsets })).toEqual(first);
+  });
+
+  it.each([
+    { reason: 'a control', old: point('old', 130, 90, false, 'A'), newcomer: point('new', 180, 90, true, 'B'),
+      offset: { x: -50, y: -70, width: 100, height: 48 }, obstacles: [{ x: 80, y: 20, width: 10, height: 10 }] },
+    { reason: 'the viewport edge', old: point('old', 40, 210, false, 'A'), newcomer: point('new', 90, 210, true, 'B'),
+      offset: { x: -50, y: -60, width: 100, height: 48 }, obstacles: [] },
+  ])('reserves an existing label hidden by $reason so a new name cannot steal its slot', ({ old, newcomer, offset, obstacles }) => {
+    const reserved = { ...offset, x: old.x + offset.x, y: old.y + offset.y };
+    const options = { width: 402, height: 320, labelHeight: 48, obstacles };
+    const withoutReservation = placeMapLabels([newcomer], options);
+    expect(withoutReservation).toHaveLength(1);
+    expect(overlaps(withoutReservation[0], reserved)).toBe(true);
+    const previousOffsets = new Map([[old.id, offset]]);
+    const labels = placeMapLabels([old, newcomer], { ...options, previousOffsets });
+    expect(labels.some(label => label.id === old.id)).toBe(false);
+    expect(labels.some(label => label.id === newcomer.id)).toBe(true);
+    expect(labels.every(label => !overlaps(label, reserved))).toBe(true);
+    expect(previousOffsets.get(old.id)).toEqual(offset);
+  });
+});
+
+describe('marine preview label fallback', () => {
+  it('keeps nearby beach names when full photo cards cannot fit', () => {
+    const points = [
+      { ...point('north', 70, 80, true, 'A'), labelHeight: 90, fallbackHeight: 48 },
+      { ...point('south', 70, 180, true, 'B'), labelHeight: 90, fallbackHeight: 48 },
+    ];
+    const options = { width: 140, height: 260 };
+    expect(placeMapLabels(points.map(item => ({ ...item, fallbackHeight: undefined })), options)).toEqual([]);
+    const labels = placeMapLabels(points, options);
+    expect(labels.map(label => label.id)).toEqual(['north', 'south']);
+    expect(labels.every(label => label.height === 48)).toBe(true);
+    expectWithinViewport(labels, options.width, options.height);
+    expectNearAnchors(labels, points);
+  });
+
+  it('keeps a cached name-only label at 48px when panning opens room for its 90px photo', () => {
+    const beach = { ...point('photo', 70, 100, true, 'A'), labelHeight: 90, fallbackHeight: 48 };
+    const options = { width: 140, height: 320, obstacles: [{ x: 8, y: 140, width: 124, height: 100 }] };
+    const first = placeMapLabels([beach], options);
+    expect(first).toHaveLength(1);
+    expect(first[0].height).toBe(48);
+    const previousOffsets = offsetsFor(first, [beach]);
+    const moved = { ...beach, y: beach.y + 40 };
+    // Without an assignment, this new position can fit the full photo card.
+    expect(placeMapLabels([moved], options)[0].height).toBe(90);
+    const next = placeMapLabels([moved], { ...options, previousOffsets });
+    expect(next).toEqual([{ ...first[0], y: first[0].y + 40 }]);
+    expect(previousOffsets.get(beach.id)?.height).toBe(48);
+    expect(placeMapLabels([beach], { ...options, previousOffsets })).toEqual(first);
+  });
+
+  it('does not downgrade and reposition an existing photo card when its cached position leaves the viewport', () => {
+    const beach = { ...point('photo', 70, 140, true, 'A'), labelHeight: 90, fallbackHeight: 48 };
+    const options = { width: 140, height: 320, obstacles: [{ x: 8, y: 140, width: 124, height: 100 }] };
+    const first = placeMapLabels([beach], options);
+    expect(first).toHaveLength(1);
+    expect(first[0].height).toBe(90);
+    const previousOffsets = offsetsFor(first, [beach]);
+    const moved = { ...beach, y: beach.y - 40 };
+    expect(placeMapLabels([moved], options)[0].height).toBe(48);
+    expect(placeMapLabels([moved], { ...options, previousOffsets })).toEqual([]);
+    expect(previousOffsets.get(beach.id)?.height).toBe(90);
+    expect(placeMapLabels([beach], { ...options, previousOffsets })).toEqual(first);
   });
 });

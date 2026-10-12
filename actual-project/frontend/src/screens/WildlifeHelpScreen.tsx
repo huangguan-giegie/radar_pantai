@@ -5,6 +5,7 @@ import type { WildlifeGuidance } from "../iteration3Personal";
 import { useAsyncData } from "../useAsyncData";
 import { PHOTOS } from "../visuals";
 import { mergeWildlifeGuidance } from "../wildlifeGuidance";
+import { marineLifeCopy } from "../presentation";
 export default function WildlifeHelpScreen() {
   const { data: guidance, loading, error, refresh } = useAsyncData(
     () => iteration3Request<WildlifeGuidance>('/wildlife-guidance'), [], null,
@@ -30,18 +31,18 @@ export default function WildlifeHelpScreen() {
         {[effectiveGuidance.incident].map((t, i) => (
           <div key={t} className="wildlife-rule">
             <span>{i + 1}</span>
-            <p>{t}</p>
+            <p>{marineLifeCopy(t)}</p>
           </div>
         ))}
       </WhiteCard>
       {effectiveGuidance.authorities.map(authority => <SummaryCard key={authority.url} eyebrow={authority.name}>
         {authority.phone && <h2 style={{ color: 'white', fontSize: 28 }}>{authority.phone}</h2>}
         {authority.hours && <p style={{ color: '#ffffffb3' }}>{authority.hours}</p>}
-        {authority.telephoneUri && <a className="lime-button" href={authority.telephoneUri}>Call authority</a>}
-        <p className="coastal-footnote" style={{ color: '#ffffffb3' }}>Checked {authority.lastChecked} · <a href={authority.url} target="_blank" rel="noreferrer" style={{ color: 'white' }}>Official contact details ↗</a></p>
+        {authority.telephoneUri && <a className="lime-button" href={authority.telephoneUri}>Call Authority</a>}
+        <p className="coastal-footnote" style={{ color: '#ffffffb3' }}>Checked {authority.lastChecked} · <a href={authority.url} target="_blank" rel="noreferrer" style={{ color: 'white' }}>Official Contact Details ↗</a></p>
       </SummaryCard>)}
       <p className="coastal-footnote">
-        {effectiveGuidance.note}
+        {marineLifeCopy(effectiveGuidance.note)}
       </p>
     </CoastalPage>
   );

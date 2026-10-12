@@ -92,7 +92,7 @@ export default function BackgroundScreen({ intro = false }: { intro?: boolean })
             <p className="eyebrow">Radar Sampah</p>
             <h2 id="about-purpose" style={{ color: 'white', fontSize: 24, margin: 0 }}>Beach litter & marine biodiversity in Malaysia</h2>
             <p style={{ fontSize: 14, lineHeight: 1.5, color: '#ffffffcc' }}>
-              Marine litter can harm wildlife and coastal habitats. Radar Sampah connects beach litter reports with marine biodiversity awareness, helping people understand our coast and take action together.
+              Marine litter can harm marine life and coastal habitats. Radar Sampah connects beach litter reports with marine biodiversity awareness, helping people understand our coast and take action together.
             </p>
             <p style={{ fontSize: 14, lineHeight: 1.5, color: '#ffffffcc' }}>Sampah means rubbish in Malay. Explore freely, and use an anonymous ID to contribute.</p>
             <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>

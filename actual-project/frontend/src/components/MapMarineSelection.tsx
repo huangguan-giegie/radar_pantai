@@ -39,19 +39,21 @@ export function MapMarineSelection({ beachName, rating, color, lightText, cards,
     <button className="marine-radial-close" aria-label="Close nearby marine life" onClick={onClose}><Close size={15} color="currentColor" /></button>
     <button ref={core} className="marine-radial-core" style={{ background: color, color: lightText ? '#fff' : '#172b35' }}
       aria-label={`Open ${beachName} beach details`} onClick={onBeach}>
-      <strong>{beachName}</strong><span className="marine-core-rating">{rating}</span><small>Beach details <ChevronRight size={11} color="currentColor" /></small>
+      <strong>{beachName}</strong><span className="marine-core-rating">{rating}</span><small>Beach Details <ChevronRight size={11} color="currentColor" /></small>
     </button>
-    {visible.map((card, index) => <button className={'marine-radial-species' + (card.modelled ? ' is-modelled' : '')}
+    {visible.map((card, index) => <button className={'marine-radial-species'
+      + (points[index].captionAbove ? ' has-outward-caption' : '') + (card.modelled ? ' is-modelled' : '')}
       key={card.id} style={{ left: `${points[index].x / 2.8}%`, top: `${points[index].y / 2.8}%` }}
       aria-label={`Open ${card.name}${card.kind === 'habitat' ? ' habitat' : ''} guide · ${card.modelled ? 'OBIS modelled context' : 'published reference'}`}
       onClick={() => onSpecies(card)}>
       {card.kind === 'habitat' ? <span className="marine-habitat-icon"><SpeciesIcon glyph="grass" size={25} color="currentColor" /><small>Habitat</small></span>
         : <SpeciesPicture image={card.image} name={card.name} />}
       <span className="marine-node-arrow" aria-hidden="true"><ChevronRight size={11} color="currentColor" /></span>
+      <span className="marine-radial-name">{card.name}</span>
     </button>)}
     {remaining.length > 0 && <button className="marine-radial-species marine-radial-more"
       style={{ left: `${points[visible.length].x / 2.8}%`, top: `${points[visible.length].y / 2.8}%` }}
-      aria-label={`Show ${remaining.length} more ${remaining.some(card => card.kind === 'habitat') ? 'marine-life entries' : 'species'}`} onClick={onMore}>+{remaining.length}</button>}
+      aria-label={`Show ${remaining.length} more ${remaining.some(card => card.kind === 'habitat') ? 'marine-life entries' : 'species'}`} onClick={onMore}>+{remaining.length}<span className="marine-radial-name">More Species</span></button>}
     <div className="marine-radial-status" role="status">
       {loading ? <span>Loading marine-life context…</span> : error ? <span>Additional context unavailable. <button onClick={onRetry}>Retry</button></span>
         : !cards.length ? <span>No species information available for this beach.</span> : null}

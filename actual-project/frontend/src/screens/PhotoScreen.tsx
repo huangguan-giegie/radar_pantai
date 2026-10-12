@@ -207,10 +207,10 @@ export default function PhotoScreen() {
           <div style={{ background: C.tint, border: `1px solid ${C.line}`, borderRadius: 16, padding: '13px 14px', color: C.slate, fontSize: 12, lineHeight: 1.5 }}>
             <div>Existing photo unavailable. You can keep this report or choose a replacement photo.</div>
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-              <button type="button" onClick={() => nav('/report/details')} style={{ color: C.navy, fontWeight: 700, fontSize: 12 }}>
+              <button type="button" onClick={() => nav('/report/details')} style={{ color: C.navy, fontWeight: 650, fontSize: 14 }}>
                 Keep Existing Record
               </button>
-              <button type="button" onClick={() => libraryRef.current?.click()} style={{ color: C.navy, fontWeight: 700, fontSize: 12 }}>
+              <button type="button" onClick={() => libraryRef.current?.click()} style={{ color: C.navy, fontWeight: 650, fontSize: 14 }}>
                 Choose Replacement Photo
               </button>
             </div>
@@ -263,8 +263,8 @@ export default function PhotoScreen() {
               >
                 <Camera size={26} strokeWidth={1.7} />
               </div>
-              <div style={{ color: C.bg, fontSize: 16, fontWeight: 650 }}>
-                {uploading ? 'Uploading…' : dragging ? 'Drop the photo here' : 'Take Photo'}
+              <div style={{ color: C.bg, fontSize: 14, fontWeight: 650 }}>
+                {uploading ? 'Uploading…' : dragging ? 'Drop the Photo Here' : 'Take Photo'}
               </div>
 
             </button>
@@ -289,7 +289,7 @@ export default function PhotoScreen() {
                 <Upload />
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 640 }}>Upload Photo</div>
+                <div style={{ fontSize: 14, fontWeight: 650 }}>Upload Photo</div>
                 <div style={{ fontSize: 12, color: C.dim, marginTop: 3 }}>JPG or PNG · up to 10 MB</div>
               </div>
               <ChevronRight size={14} />
@@ -316,7 +316,7 @@ export default function PhotoScreen() {
                   patchDraft({ photo: null, aiDecision: null, aiModelVersion: null });
                   cameraRef.current?.click();
                 }}
-                style={{ position: 'absolute', top: 14, right: 14, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,.9)', background: 'rgba(30,36,44,.45)', backdropFilter: 'blur(6px)', padding: '6px 11px', borderRadius: 999 }}
+                style={{ position: 'absolute', top: 14, right: 14, fontSize: 14, fontWeight: 650, color: 'rgba(255,255,255,.9)', background: 'rgba(30,36,44,.45)', backdropFilter: 'blur(6px)', padding: '6px 11px', borderRadius: 999 }}
               >
                 Retake
               </button>

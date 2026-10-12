@@ -1,0 +1,57 @@
+/* Keep the report activity centred against the complete severity summary. */
+.beach-detail-screen .beach-band-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.beach-detail-screen .beach-band-summary {
+  min-width: 0;
+}
+
+.beach-detail-screen .beach-band-summary .beach-band-value {
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.beach-detail-screen .beach-band-summary .beach-band-value strong {
+  font-size: clamp(22px, 6vw, 31px);
+  overflow-wrap: normal;
+}
+
+.beach-detail-screen .beach-report-meta {
+  display: grid;
+  gap: 6px;
+  align-self: center;
+  align-content: center;
+  justify-items: end;
+  justify-self: end;
+  max-width: 100%;
+  margin: 0;
+  text-align: right;
+}
+
+.beach-detail-screen .beach-report-meta > small {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background: #eef1f5;
+  padding: 5px 8px;
+  color: #5a6474;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+@media (max-width: 360px) {
+  .beach-detail-screen .beach-band-header {
+    gap: 8px;
+  }
+
+  .beach-detail-screen .beach-band-summary .beach-band-value strong {
+    font-size: 20px;
+  }
+}
