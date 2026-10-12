@@ -161,8 +161,8 @@ export default function IdentityScreen() {
                     borderRadius: 10,
                     border: '1px solid rgba(221,227,236,.32)',
                     color: C.bg,
-                    fontSize: 12.5,
-                    fontWeight: 620,
+                    fontSize: 14,
+                    fontWeight: 650,
                   }}
                 >
                   {copiedId ? 'Copied' : 'Copy ID'}
@@ -302,8 +302,8 @@ export default function IdentityScreen() {
                   borderRadius: 999,
                   background: mode === 'new' ? C.navy : 'transparent',
                   color: mode === 'new' ? C.bg : C.muted,
-                  fontSize: 12.5,
-                  fontWeight: mode === 'new' ? 650 : 600,
+                  fontSize: 14,
+                  fontWeight: 650,
                 }}
               >
                 Get an ID
@@ -318,8 +318,8 @@ export default function IdentityScreen() {
                   borderRadius: 999,
                   background: mode === 'existing' ? C.navy : 'transparent',
                   color: mode === 'existing' ? C.bg : C.muted,
-                  fontSize: 12.5,
-                  fontWeight: mode === 'existing' ? 650 : 600,
+                  fontSize: 14,
+                  fontWeight: 650,
                 }}
               >
                 Restore Profile

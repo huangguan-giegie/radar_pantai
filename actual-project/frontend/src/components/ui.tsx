@@ -15,10 +15,14 @@
 // Everything here is a real <button> when it is clickable. That is what gives
 // us keyboard focus, Enter and Space, and the right announcement to a screen
 // reader - all of which a clickable <div> silently throws away.
-import { useEffect, type CSSProperties, type ReactNode } from 'react';
+import { Children, useEffect, type CSSProperties, type ReactNode } from 'react';
 import { C, MONO } from '../theme';
 import { actionTitle } from '../presentation';
 import { ArrowRight, ChevronLeft } from './Icon';
+
+function actionContent(children: ReactNode) {
+  return Children.map(children, child => typeof child === 'string' ? actionTitle(child) : child);
+}
 
 /**
  * The main action on a screen. There is at most one per screen, so the answer
@@ -62,15 +66,15 @@ export function PrimaryButton({
         padding: '12px 18px',
         textAlign: 'center',
         lineHeight: 1.3,
-        fontSize: 14,
-        fontWeight: 650,
         cursor: disabled ? 'not-allowed' : 'pointer',
         boxShadow: disabled ? 'none' : '0 16px 32px -14px rgba(11,33,97,.55)',
         width: '100%',
         ...style,
+        fontSize: 14,
+        fontWeight: 650,
       }}
     >
-      {typeof children === 'string' ? actionTitle(children) : children}
+      {actionContent(children)}
       {trailingArrow && <ArrowRight />}
     </button>
   );
@@ -112,13 +116,13 @@ export function GhostButton({
         padding: '11px 18px',
         textAlign: 'center',
         lineHeight: 1.3,
-        fontSize: 14,
-        fontWeight: 650,
         width: '100%',
         ...style,
+        fontSize: 14,
+        fontWeight: 650,
       }}
     >
-      {typeof children === 'string' ? actionTitle(children) : children}
+      {actionContent(children)}
     </button>
   );
 }
@@ -145,15 +149,15 @@ export function TextButton({
       className="link-hover"
       style={{
         textAlign: 'center',
-        fontSize: 14,
         color: C.muted,
         padding: 8,
-        fontWeight: 600,
         width: '100%',
         ...style,
+        fontSize: 14,
+        fontWeight: 650,
       }}
     >
-      {children}
+      {actionContent(children)}
     </button>
   );
 }
@@ -390,7 +394,7 @@ export function ErrorNote({ title, body, onRetry }: { title: string; body?: stri
         <button
           type="button"
           onClick={onRetry}
-          style={{ fontSize: 12, fontWeight: 700, color: C.red, whiteSpace: 'nowrap' }}
+          style={{ fontSize: 14, fontWeight: 650, color: C.red, whiteSpace: 'nowrap' }}
         >
           Retry
         </button>

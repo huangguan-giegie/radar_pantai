@@ -24,7 +24,7 @@ describe("species questions", () => {
     render();
     expect(view.root.findAllByProps({ role: "dialog" })).toHaveLength(0);
     expect(view.root.findByType("textarea").props.value).toBe("");
-    for (const [index, label] of ["Where does", "How can", "What can"].entries()) {
+    for (const [index, label] of ["Where Does", "How Can", "What Can"].entries()) {
       act(() => button(label).props.onClick());
       expect(html()).toContain(species.answers[index].text);
       expect(html()).toContain("published sources");

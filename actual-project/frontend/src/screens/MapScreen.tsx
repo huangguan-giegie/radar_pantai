@@ -18,16 +18,17 @@ import { severityLabel, SEVERITY } from "../theme";
 import type { SeverityBand } from "../types";
 import { BORNEO_VIEW_BOUNDS, getViewBounds, groupMapPoints, PENINSULA_VIEW_BOUNDS } from "../mapGeometry";
 import { getLocatedMapBeaches, PRIMARY_MAP_BEACHES } from "../mapCatalogue";
-import { placeMapLabels } from "../mapLabels";
+import { placeMapLabels, type MapLabelOffset } from "../mapLabels";
 import type { BeachWildlifeSpecies } from "../beachMarineLife";
 import { MapMarineSelection } from "../components/MapMarineSelection";
 import { SpeciesPicture } from "../components/SpeciesPicture";
-import { marineLayerEnabled, marineLayerParams, selectMapBeach, regionMarineReferenceCount, radialSpecies, mapMarineCards } from "../mapMarineSelection";
+import { marineLayerEnabled, marineLayerParams, selectMapBeach, regionMarineReferenceCount, radialSpecies, mapMarineCards, marineSelectionLayout, MIN_MARINE_SELECTION_HEIGHT } from "../mapMarineSelection";
 import { searchBeaches, borneoReportCounts } from "../beachSearch";
+import { pauseMapInteractions } from "../mapInteractionPause";
 const COLORS: Record<string, string> = {
-  Low: "#367b40",
-  Moderate: "#866514",
-  High: "#b84f16",
+  Low: "#92ce55",
+  Moderate: "#e7bb51",
+  High: "#f08a38",
   Severe: "#c20e19",
 };
 function BorneoInset({ onClick, counts }: { onClick: () => void; counts: ReturnType<typeof borneoReportCounts> }) {
@@ -66,6 +67,7 @@ export default function MapScreen() {
   const [showMoreSpecies, setShowMoreSpecies] = useState(false);
   const userMoved = useRef(false);
   const fittedRegion = useRef<string | null>(null);
+  const labelLayout = useRef({ key: '', offsets: new Map<string, MapLabelOffset>() });
   type Panel = "key" | "beaches" | "regions";
   const panel = params.get("panel");
   const sheet = ["key", "beaches", "regions"].includes(panel ?? "")
@@ -196,15 +198,21 @@ export default function MapScreen() {
   useEffect(() => { setShowMoreSpecies(false); }, [selectedBeachId]);
   useEffect(() => {
     const map = mapRef.current;
+    if (!map || !ready || !selectedBeachId) return;
+    return pauseMapInteractions(map);
+  }, [ready, selectedBeachId]);
+  useEffect(() => {
+    const map = mapRef.current;
     if (!map || !ready || !selectedBeach) return;
     userMoved.current = true;
     const point = map.latLngToContainerPoint([selectedBeach.lat, selectedBeach.lng]);
     const size = map.getSize();
-    // Keep the circle on the actual beach coordinate, with space for its caption.
-    map.panBy([point.x - size.x / 2, point.y - (size.y - 50) / 2], { animate: false });
+    const layout = marineSelectionLayout(size, marineCards.length);
+    // Fit captions and controls while keeping the circle on the beach coordinate.
+    map.panBy([point.x - layout.x, point.y - layout.y], { animate: false });
     // Leaflet mutates the map ref outside React: refresh the radial overlay position after panning.
     setViewRevision(value => value + 1);
-  }, [ready, selectedBeachId, viewSize]);
+  }, [ready, selectedBeachId, viewSize, marineCards.length]);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || !selectedBeachId) return;
@@ -247,7 +255,7 @@ export default function MapScreen() {
     };
     const size = map.getSize();
     const containerRect = map.getContainer().getBoundingClientRect();
-    const controls = Array.from(map.getContainer().parentElement?.querySelectorAll(".map-hint, .map-controls, .map-full-overview, .borneo-inset") ?? []).map(el => {
+    const controls = Array.from(map.getContainer().parentElement?.querySelectorAll(".map-context-bar > *, .map-controls, .map-full-overview, .borneo-inset") ?? []).map(el => {
       const rect = el.getBoundingClientRect();
       return { x: rect.left - containerRect.left, y: rect.top - containerRect.top, width: rect.width, height: rect.height };
     });
@@ -286,16 +294,32 @@ export default function MapScreen() {
       const compactLabels = size.y < 360;
       // Only the selected beach expands; the other beaches keep ordinary dots.
       const obstacles = controls;
-      const labels = selectedBeachId ? [] : placeMapLabels(locatedBeaches
+      const previews = new Map(locatedBeaches.map(beach => [beach.id,
+        layer === 'bio' ? mapMarineCards(beach.id).find(item => item.image) : undefined]));
+      const labelPoints = locatedBeaches
         .filter(b => preferred.has(b.id) || zoom >= region.zoom + 1)
-        .map(b => ({ id: b.id, name: b.name, preferred: preferred.has(b.id), ...map.latLngToContainerPoint([b.lat, b.lng]) })),
-        { width: size.x, height: size.y, obstacles, compact: compactLabels, labelHeight: layer === 'bio' ? 76 : 44 });
+        .map(b => ({ id: b.id, name: b.name, preferred: preferred.has(b.id),
+          labelHeight: previews.get(b.id) ? 90 : 48, fallbackHeight: previews.get(b.id) ? 48 : undefined,
+          ...map.latLngToContainerPoint([b.lat, b.lng]) }));
+      // Panning changes the viewport, not a beach label's side or distance from
+      // its dot. Only a changed scale/layout starts a fresh set of assignments.
+      const layoutKey = `${region.id}:${layer}:${map.getZoom()}:${size.x}:${size.y}`;
+      if (labelLayout.current.key !== layoutKey) labelLayout.current = { key: layoutKey, offsets: new Map() };
+      const labels = selectedBeachId ? [] : placeMapLabels(labelPoints,
+        { width: size.x, height: size.y, obstacles, compact: compactLabels,
+          previousOffsets: labelLayout.current.offsets });
+      for (const label of labels) {
+        const point = labelPoints.find(item => item.id === label.id)!;
+        labelLayout.current.offsets.set(label.id, { x: label.x - point.x, y: label.y - point.y,
+          width: label.width, height: label.height });
+      }
       const labelled = new Set(labels.map(label => label.id));
       const displayDot = (b: typeof locatedBeaches[number]) => marker(b.lat, b.lng, b.name,
         `<span class="beach-coast-dot" style="background:${COLORS[b.severity ?? ""] ?? "#70757c"}"></span>`,
         () => chooseBeach(b), [24, 24]);
 
-      // Main prototype beaches always keep their own coastal dots and names.
+      // Every main beach keeps its clickable coastal dot, even when nearby
+      // names cannot fit. Beach List and zoom remain available for dense areas.
       for (const b of locatedBeaches.filter(b => b.id !== selectedBeachId && (preferred.has(b.id) || labelled.has(b.id)))) displayDot(b);
       const clusters = groupMapPoints(locatedBeaches.filter(b => b.id !== selectedBeachId && !preferred.has(b.id) && !labelled.has(b.id)),
         (lat, lng) => map.project([lat, lng], zoom), { width: 22, height: 22 });
@@ -332,15 +356,15 @@ export default function MapScreen() {
         const node = document.createElement("div");
         node.className = "beach-map-label" + (compactLabels ? " compact" : "");
         const label = document.createElement("span");
+        label.className = 'beach-map-name';
         label.textContent = b.name;
         label.style.color = '#fff';
         label.style.background = COLORS[b.severity ?? ""] ?? "#70757c";
         node.append(label);
         // Surface a place-specific reference before a beach is selected.
         // Clicking its marker still opens the full marine-life circle.
-        const references = layer === 'bio' ? mapMarineCards(b.id) : [];
-        const photo = references.find(item => item.image);
-        if (photo?.image) {
+        const photo = previews.get(b.id);
+        if (photo?.image && placed.height === 90) {
           node.classList.add('has-species-preview');
           const preview = document.createElement('span');
           preview.className = 'map-label-species';
@@ -349,8 +373,13 @@ export default function MapScreen() {
           image.alt = photo.name;
           preview.append(image);
           const caption = document.createElement('small');
-          caption.textContent = 'Marine Life';
+          caption.textContent = photo.name;
           preview.append(caption);
+          const expand = document.createElement('b');
+          expand.className = 'map-species-expand';
+          expand.setAttribute('aria-hidden', 'true');
+          expand.textContent = '›';
+          preview.append(expand);
           node.append(preview);
         }
         marker(
@@ -372,7 +401,7 @@ export default function MapScreen() {
   const map = mapRef.current;
   const selectionPosition = map && ready && selectedBeach ? {
     ...map.latLngToContainerPoint([selectedBeach.lat, selectedBeach.lng]),
-    diameter: Math.max(220, Math.min(marineCards.length > 2 ? 284 : 248, map.getSize().x - 32, map.getSize().y - 80)),
+    diameter: marineSelectionLayout(map.getSize(), marineCards.length).diameter,
   } : null;
   return (
     <main className={'screen coastal-map' + (selectedBeach ? ' has-selection' : '')}>
@@ -397,7 +426,8 @@ export default function MapScreen() {
         </>}
       </section>}
 
-      <div className={'coastal-map-viewport' + (selectedBeach ? ' has-marine-selection' : '')}>
+      <div className={'coastal-map-viewport' + (selectedBeach ? ' has-marine-selection' : '')}
+        style={selectedBeach ? { minHeight: MIN_MARINE_SELECTION_HEIGHT, flexShrink: 0 } : undefined}>
       <div ref={elRef} className="coastal-map-canvas" aria-label="Interactive coast map" />
       {selectedBeach && selectionPosition && <MapMarineSelection
         beachName={selectedBeach.name}
@@ -410,7 +440,13 @@ export default function MapScreen() {
         onSpecies={card => nav(card.destination)} onMore={() => setShowMoreSpecies(true)}
         onRetry={() => void refreshWildlife()}
       />}
-      <div className="map-hint">{loading ? 'Loading the coast…' : region ? region.name + ' · tap a beach' : 'Report counts · tap a region'}</div>
+      <div className={'map-context-bar' + (region ? ' is-region' : '')}>
+        <div className="map-hint">{loading ? 'Loading the coast…' : region ? <><strong>{region.name}</strong><span>Tap a Beach</span></> : 'Report counts · tap a region'}</div>
+        {region ? <div className="map-attention-legend" aria-label="Beach attention levels">
+          {Object.entries(COLORS).map(([label, color]) => <span key={label}><i style={{ background: color }} />{label}</span>)}
+          <span className="unrated-legend"><i style={{ background: '#70757c' }} />Insufficient Data</span>
+        </div> : <button className="map-pill map-key-button" onClick={() => setSheet('key')}>Map Key</button>}
+      </div>
       <div className="map-controls">
         <button className="map-pill" onClick={() => setSheet("regions")}>
           Regions
@@ -435,10 +471,6 @@ export default function MapScreen() {
       {!region && <BorneoInset onClick={() => setRegion("borneo")} counts={borneoReportCounts(beaches)} />}
       {region && <button className="map-pill map-full-overview" onClick={() => setRegion("")}>Full Map</button>}
       </div>
-      {region ? <div className="map-attention-legend" aria-label="Beach attention levels">
-        {Object.entries(COLORS).map(([label, color]) => <span key={label}><i style={{ background: color }} />{label}</span>)}
-        <span><i style={{ background: '#70757c' }} />Insufficient Data</span>
-      </div> : <div className="map-legend-entry"><button className="map-pill" onClick={() => setSheet('key')}>Map Key</button></div>}
       <div className="map-bottom-card">
         {(error || offline) && (
           <p className="coastal-footnote" role="alert">
@@ -456,7 +488,7 @@ export default function MapScreen() {
           {region && <PrimaryButton height={44} style={{ width: 'auto', paddingInline: 14, boxShadow: 'none' }} onClick={() => setSheet('beaches')}>Beach List</PrimaryButton>}
         </div>
         {region && locatedBeaches.length < areaBeaches.length && <p className="coastal-footnote">More beaches are available in the list.</p>}
-        {layer === 'bio' && <p className="coastal-footnote map-photo-hint">{selectedBeach ? (marineCards.length ? 'Centre → beach details · outer icons → guides' : 'Tap the centre for beach details.') : region ? 'Tap a beach to explore nearby marine life.' : 'Choose a region, then tap a beach.'}</p>}
+        {layer === 'bio' && <p className="coastal-footnote map-photo-hint">{selectedBeach ? (marineCards.length ? 'Centre → beach details · outer circles → species guides' : 'Tap the centre for beach details.') : region ? 'Tap a beach to open its marine-life circle.' : 'Choose a region, then tap a beach.'}</p>}
         {USE_MOCK && <p className="demo-label">Preview · example counts</p>}
       </div>
       {sheet === "key" && (

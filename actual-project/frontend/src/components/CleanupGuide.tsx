@@ -4,6 +4,7 @@ import { iteration3Request } from "../iteration3Api";
 import type { WildlifeGuidance } from "../iteration3Personal";
 import { useAsyncData } from "../useAsyncData";
 import { mergeWildlifeGuidance } from "../wildlifeGuidance";
+import { marineLifeCopy } from "../presentation";
 export function CleanupGuide({ recorded = false, imageFree = false }: { recorded?: boolean; imageFree?: boolean }) {
   const dropOffName = guide.dropOffName && !guide.dropOffName.startsWith("[") ? guide.dropOffName : null;
   const checkedDate = guide.checkedDate && !guide.checkedDate.startsWith("[") ? guide.checkedDate : null;
@@ -115,10 +116,10 @@ export function WildlifeGuide() {
         {effectiveGuidance.tips.slice(0, 3).map((text, i) => (
           <div key={text} className="wildlife-rule">
             <span>{i + 1}</span>
-            <p>{text}</p>
+            <p>{marineLifeCopy(text)}</p>
           </div>
         ))}
-        <p className="coastal-footnote">Reviewed {effectiveGuidance.reviewDate} · {effectiveGuidance.note}</p>
+        <p className="coastal-footnote">Reviewed {effectiveGuidance.reviewDate} · {marineLifeCopy(effectiveGuidance.note)}</p>
 
       </WhiteCard>
     </section>

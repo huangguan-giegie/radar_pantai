@@ -145,10 +145,10 @@ export default function WelcomeScreen() {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 15.5,
-              fontWeight: 600,
+              fontWeight: 650,
             }}
           >
-            Count Me in
+            Count Me In
           </button>
           <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(221,227,236,.7)', lineHeight: 1.5 }}>
             You’ll only need to sign in to save your activity.

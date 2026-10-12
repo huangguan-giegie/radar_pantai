@@ -258,7 +258,7 @@ export default function ReviewScreen() {
               type="button"
               disabled={busy}
               onClick={() => nav(`/reports/${duplicateMatch.id}`)}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, marginTop: 4, color: 'inherit', fontSize: 13, fontWeight: 760 }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 44, marginTop: 4, color: 'inherit', fontSize: 14, fontWeight: 650 }}
             >
               View Existing Report
               <ArrowRight color="currentColor" />

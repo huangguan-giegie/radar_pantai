@@ -106,8 +106,9 @@ describe('production Insights scope and count labels', () => {
     expect(markup).not.toContain('Legacy species 0');
     expect(markup).toContain('Curated coastal reference');
     expect(markup).toContain('OBIS-derived model context');
-    expect(markup).not.toContain('These figures cover beaches listed in Radar Sampah');
-    expect(markup).not.toContain('No marine life data yet</span>');
+    expect(markup).toContain('Coverage for Marine Life Nearby');
+    expect(markup).toContain('These figures cover beaches listed in Radar Sampah');
+    expect(markup).toContain('0 <small>beaches</small></strong><span>No marine life data yet');
     expect(markup).not.toContain('All registered beaches are listed.');
     expect(markup).not.toContain('no currently available species suggestion');
   });
@@ -118,6 +119,7 @@ describe('production Insights scope and count labels', () => {
     const markup = render('/insights/wildlife');
     expect(markup).toContain('97 <small>beaches</small></strong><span>Curated coastal references');
     expect(markup).toContain('81 <small>beaches</small></strong><span>OBIS-derived model context');
+    expect(markup).toContain('1 <small>beach</small></strong><span>No marine life data yet');
     expect(markup).toContain('No published reference or modelled context is currently available for Coastal Beach 178');
     expect(markup).not.toContain('1 beach has');
     expect(markup).not.toContain('no currently available species suggestion');

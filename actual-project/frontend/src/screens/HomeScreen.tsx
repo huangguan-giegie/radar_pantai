@@ -235,7 +235,7 @@ export default function HomeScreen() {
           </div>
           <div className="home-beach-body">
             <button type="button" className="home-location-button" onClick={() => locateNearest(beaches)} disabled={locating}>
-              {locating ? "Finding nearest beach…" : nearbyBeachId ? "Update Nearby Beach" : "Find Nearest Beach"}
+              {locating ? "Finding Nearest Beach…" : nearbyBeachId ? "Update Nearby Beach" : "Find Nearest Beach"}
             </button>
             {locationMessage && <p className="coastal-footnote" role="status">{locationMessage}</p>}
             {nextActionCard}
