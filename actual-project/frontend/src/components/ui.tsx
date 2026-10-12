@@ -413,12 +413,12 @@ export function ErrorNote({ title, body, onRetry }: { title: string; body?: stri
  */
 export function downloadRecoveryKit(participantId: string, token: string) {
   const text =
-    `Radar Sampah recovery details\nParticipant ID: ${participantId}\nRecovery token: ${token}\n\n` +
+    `Radar Pantai recovery details\nParticipant ID: ${participantId}\nRecovery token: ${token}\n\n` +
     'Keep this file private. The token works like a password.';
   const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
   const link = document.createElement('a');
   link.href = url;
-  link.download = `radar-sampah-recovery-${participantId}.txt`;
+  link.download = `radar-pantai-recovery-${participantId}.txt`;
   link.click();
   URL.revokeObjectURL(url);
 }

@@ -10,6 +10,6 @@ export function MarineCoverageSummary({ total, published, modelled, available }:
       <div><strong>{total - published - modelled} <small>{total - published - modelled === 1 ? 'beach' : 'beaches'}</small></strong><span>No marine life data yet</span></div>
     </div>}
   </SummaryCard>
-    <p className="coastal-footnote">These figures cover beaches listed in Radar Sampah, not all beaches in Malaysia. Curated references and modelled context are different evidence types. Neither confirms a sighting at a beach.</p>
+    <p className="coastal-footnote">These figures cover beaches listed in Radar Pantai, not all beaches in Malaysia. Curated references and modelled context are different evidence types. Neither confirms a sighting at a beach.</p>
   </>;
 }

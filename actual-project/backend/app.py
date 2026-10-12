@@ -1,4 +1,4 @@
-"""Reviewed Radar Sampah API entry point.
+"""Reviewed Radar Pantai API entry point.
 
 The Iteration 2 backend implementation lives in ``app_core.py``. This thin
 entry point keeps that implementation intact while enforcing the reviewed

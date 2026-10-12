@@ -1,4 +1,4 @@
-# Radar Sampah — 后端接口规范 v1（Iteration 1）
+# Radar Pantai — 后端接口规范 v1（Iteration 1）
 
 > **历史 Iteration 1 规范。** 当前以 [`API_ITERATION2.md`](../backend/API_ITERATION2.md)
 > 和 [`openapi.yaml`](./openapi.yaml) 为准。下文旧的同日去重、三位小数 GPS 存储、

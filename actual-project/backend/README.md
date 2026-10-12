@@ -1,4 +1,4 @@
-# Radar Sampah API
+# Radar Pantai API
 
 For the frontend v2 backend, local review and same-origin deployment, start with
 [README_V2.md](README_V2.md). The notes below describe the earlier API contracts.

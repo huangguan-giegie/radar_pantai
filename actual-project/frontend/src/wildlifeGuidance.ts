@@ -33,7 +33,7 @@ export const WILDLIFE_GUIDANCE_FALLBACK: WildlifeGuidance = {
     },
   ],
   reviewDate: "2026-10-09",
-  note: "General guidance; follow the relevant authority. Radar Sampah does not report incidents on your behalf.",
+  note: "General guidance; follow the relevant authority. Radar Pantai does not report incidents on your behalf.",
 };
 
 /** Merge remote editorial updates without allowing a stale response to erase local contacts. */
@@ -45,6 +45,7 @@ export function mergeWildlifeGuidance(remote: WildlifeGuidance | null | undefine
   return {
     ...WILDLIFE_GUIDANCE_FALLBACK,
     ...remote,
+    note: (remote.note ?? WILDLIFE_GUIDANCE_FALLBACK.note).replace(/Radar Sampah/g, "Radar Pantai"),
     authorities: [
       ...remoteAuthorities,
       { ...remoteFisheries, ...WILDLIFE_GUIDANCE_FALLBACK.authorities[1] },

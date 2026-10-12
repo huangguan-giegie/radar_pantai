@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[radar-sampah] a screen failed to render', error, info.componentStack);
+    console.error('[radar-pantai] a screen failed to render', error, info.componentStack);
   }
 
   // Clears the two keys that can hold a value bad enough to break a render,
@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<Props, State> {
       >
         <div style={{ maxWidth: 340, textAlign: 'center' }}>
           <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: '.16em', color: C.dim }}>
-            RADAR SAMPAH
+            RADAR PANTAI
           </div>
           <h1 style={{ fontSize: 21, fontWeight: 650, letterSpacing: '-.3px', color: C.ink, margin: '12px 0 0' }}>
             This screen stopped working

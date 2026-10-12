@@ -19,7 +19,7 @@ export default function SplashScreen() {
           <span className="splash-radar-dot splash-radar-dot-two" />
           <span className="splash-radar-centre" />
         </div>
-        <h1 id="splash-title">Radar Sampah</h1>
+        <h1 id="splash-title">Radar Pantai</h1>
         <p className="splash-tagline">
           REPORT LITTER. SUPPORT CLEANUPS. PROTECT MARINE LIFE.
         </p>

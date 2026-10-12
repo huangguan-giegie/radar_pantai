@@ -74,7 +74,7 @@ export function CleanupGuide({ recorded = false, imageFree = false }: { recorded
             <div>
               <strong>{dropOffName ?? "Drop-off point not confirmed"}</strong>
               <small>{checkedDate
-                ? `Checked by Radar Sampah · ${checkedDate}`
+                ? `Checked by Radar Pantai · ${checkedDate}`
                 : "No confirmed drop-off or recycling details are available."}</small>
             </div>
           </div>

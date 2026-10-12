@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Radar Sampah API
+  title: Radar Pantai API
   version: "1.0.0"
   description: |
     The Iteration 1 (Core MVP) backend.

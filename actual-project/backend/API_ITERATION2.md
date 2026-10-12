@@ -1,4 +1,4 @@
-# Radar Sampah Backend Contract — Iteration 2
+# Radar Pantai Backend Contract — Iteration 2
 
 This document is the reviewed Iteration 2 backend contract after the final Manual Remarks review. It supplements the frontend API documentation and records the integration decisions that must remain aligned across frontend, backend and database code.
 

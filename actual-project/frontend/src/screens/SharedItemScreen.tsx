@@ -45,7 +45,7 @@ export default function SharedItemScreen() {
     <div className="screen scroll-y">
       <div className="measure i2-page" style={{ paddingBottom: 'calc(var(--safe-bottom) + 34px)' }}>
         <BackButton onClick={back} />
-        <SectionLabel size="sm">RADAR SAMPAH · SHARED ITEM</SectionLabel>
+        <SectionLabel size="sm">RADAR PANTAI · SHARED ITEM</SectionLabel>
         {error || (items && !report && !event) ? <EmptyState title="Shared item unavailable" body={error ?? 'This link has no available item.'} /> : !items ? (
           <div role="status">Loading shared item...</div>
         ) : (

@@ -107,7 +107,7 @@ describe('production Insights scope and count labels', () => {
     expect(markup).toContain('Curated coastal reference');
     expect(markup).toContain('OBIS-derived model context');
     expect(markup).toContain('Coverage for Marine Life Nearby');
-    expect(markup).toContain('These figures cover beaches listed in Radar Sampah');
+    expect(markup).toContain('These figures cover beaches listed in Radar Pantai');
     expect(markup).toContain('0 <small>beaches</small></strong><span>No marine life data yet');
     expect(markup).not.toContain('All registered beaches are listed.');
     expect(markup).not.toContain('no currently available species suggestion');
