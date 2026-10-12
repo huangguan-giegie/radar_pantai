@@ -161,9 +161,9 @@ function WildlifeCoverage({ beaches }: { beaches: InsightsData['wildlife'] }) {
       const names = hasValidEvidence ? model?.species.map(item => item.name) ?? [] : [];
       const contextLabel = !loaded
         ? loading ? 'Checking marine life sources…' : 'Marine life source data temporarily unavailable'
-        : names.length && sourceStatus === 'published_reference' ? 'Published coastal reference'
+        : names.length && sourceStatus === 'published_reference' ? 'Curated coastal reference'
         : names.length && sourceStatus === 'modelled'
-          ? 'Modelled marine-life context'
+          ? 'OBIS-derived marine-grid model'
           : 'No marine life data yet';
       const habitat = beach.habitat === 'Biodiversity information not yet available'
         ? 'Marine habitat not individually documented' : beach.habitat;
