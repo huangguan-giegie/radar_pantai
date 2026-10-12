@@ -5,7 +5,6 @@ import { Check, Shield } from '../components/Icon';
 import { Alert, Callout, OverlayChip, SectionLabel } from '../components/ds';
 import { BackButton, GhostButton, PrimaryButton, StepBadge, TextButton } from '../components/ui';
 import { useApp } from '../AppContext';
-import { stepBadgeLabel } from '../flowRules';
 import { analyseReportPhoto, type AiSuggestion } from '../iteration2';
 import { C, MONO } from '../theme';
 import type { LitterCategory, QuantityBand, QuantityByCategory } from '../types';
@@ -101,18 +100,6 @@ export default function AiSuggestionScreen() {
 
   const modelVersion = result?.modelVersion ?? null;
 
-  // What the AI actually proposed, frozen for as long as this screen is up.
-  // Deliberately not derived from `editable`: ticking a category on must not
-  // move the chip into the detected row, or the row under the user's finger
-  // would rearrange itself as they tap.
-  //
-  // On a revisit the list comes from the draft, which is safe because nothing
-  // can reach this screen with edited bands: every route on to the details form
-  // replaces this one, so a remount either re-runs recognition (aiModelState is
-  // null) or restores the bands untouched.
-  const detected = result ? (Object.keys(result.suggestions) as LitterCategory[]) : [];
-  const notDetected = CATEGORIES.filter((category) => !detected.includes(category));
-
   function confirm() {
     if (Object.keys(editable).length === 0) return;
     patchDraft({ quantities: editable, aiDecision: 'confirmed', aiModelState: 'ready', aiModelVersion: modelVersion });
@@ -166,10 +153,9 @@ export default function AiSuggestionScreen() {
       <div className="measure i2-page anim-fade-up" style={{ paddingBottom: 'calc(var(--safe-bottom) + 34px)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <BackButton onClick={back} />
-          {/* Step 4 covers the whole "say what you found" job. Accepting the
-              suggestion goes on to Review; the manual form is the other way
-              through the same step, so neither is numbered ahead of the other. */}
-          <StepBadge>{stepBadgeLabel('suggestions', 'AI CHECK')}</StepBadge>
+          {/* The suggestion itself is checked on the review step, so a ready
+              result is step 4; checking and every fallback are step 3. */}
+          <StepBadge>STEP 4 OF 6 · AI CHECK</StepBadge>
         </div>
         <div>
           <SectionLabel size="sm">AI SUGGESTION · REVIEW BEFORE SAVING</SectionLabel>
@@ -207,36 +193,14 @@ export default function AiSuggestionScreen() {
 
             <div className="i2-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                <SectionLabel size="sm">DETECTED BY THE AI</SectionLabel>
+                <SectionLabel size="sm">DETECTED CATEGORIES</SectionLabel>
                 <button type="button" onClick={() => nav('/method/ai')} style={{ minWidth: 34, minHeight: 34, borderRadius: 17, background: C.tint, color: C.navy, fontWeight: 800 }} aria-label="How AI suggestions work">?</button>
               </div>
-              {/* Two rows, split by what the AI actually reported. One list of
-                  all six under the heading "detected" claimed six detections
-                  for a photo with two, so the heading now only covers what was
-                  really found - and the categories it missed keep their own
-                  row, because seeing metal in a photo the AI read as plastic is
-                  exactly when a person needs to add it. */}
-              {detected.length > 0 ? (
-                <div className="i2-chip-row" style={{ marginTop: 11 }} role="group" aria-label="Categories the AI found">
-                  {detected.map((category) => (
-                    <button key={category} type="button" className="i2-chip press" aria-pressed={category in editable} onClick={() => toggle(category)}>{category}</button>
-                  ))}
-                </div>
-              ) : (
-                <p style={{ margin: '11px 0 0', color: C.muted, fontSize: 12.5, lineHeight: 1.55 }}>
-                  The AI did not name a category. Add the ones you saw from the list below.
-                </p>
-              )}
-              {notDetected.length > 0 && (
-                <div style={{ marginTop: 16 }}>
-                  <SectionLabel size="sm">NOT DETECTED · TAP TO ADD</SectionLabel>
-                  <div className="i2-chip-row" style={{ marginTop: 10 }} role="group" aria-label="Categories the AI did not find">
-                    {notDetected.map((category) => (
-                      <button key={category} type="button" className="i2-chip press" aria-pressed={category in editable} onClick={() => toggle(category)}>{category}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div className="i2-chip-row" style={{ marginTop: 11 }}>
+                {CATEGORIES.map((category) => (
+                  <button key={category} type="button" className="i2-chip press" aria-pressed={category in editable} onClick={() => toggle(category)}>{category}</button>
+                ))}
+              </div>
               <div style={{ display: 'grid', gap: 11, marginTop: 16 }}>
                 {(Object.keys(editable) as LitterCategory[]).map((category) => (
                   <label key={category} className="i2-quantity-row">

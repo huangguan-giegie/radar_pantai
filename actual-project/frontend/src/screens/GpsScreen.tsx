@@ -17,7 +17,6 @@ import { BackButton, GhostButton, PrimaryButton, StepBadge, TextButton } from '.
 import { PrivacySheet } from '../components/PrivacySheet';
 import { C } from '../theme';
 import { useApp } from '../AppContext';
-import { stepBadgeLabel } from '../flowRules';
 import { useAppBack } from '../navigation';
 
 
@@ -137,7 +136,7 @@ export default function GpsScreen() {
           backdropFilter: 'blur(10px)',
         }}
       />
-      <div style={{ position: 'absolute', top: 'var(--top-inset)', right: 18, zIndex: 820 }}><StepBadge>{stepBadgeLabel('location', 'LOCATION')}</StepBadge></div>
+      <div style={{ position: 'absolute', top: 'var(--top-inset)', right: 18, zIndex: 820 }}><StepBadge>STEP 2 OF 6 · LOCATION</StepBadge></div>
 
       <div
         className="anim-sheet-up measure"
