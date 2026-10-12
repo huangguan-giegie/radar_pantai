@@ -42,7 +42,7 @@ jobs:
           PROJECT_ID: project-5db6723a-ac19-4d7c-94a
           INSTANCE: radar-sampah
           ZONE: us-west1-b
-          REPOSITORY: https://github.com/huangguan-giegie/radar_sampah.git
+          REPOSITORY: https://github.com/huangguan-giegie/radar_pantai.git
           BRANCH: main
           DEPLOY_SHA: ${{ github.sha }}
         run: |
