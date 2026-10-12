@@ -82,17 +82,20 @@ describe('production Insights scope and count labels', () => {
     expect(markup).not.toContain('Legacy species 0');
     expect(markup).toContain('Curated coastal reference');
     expect(markup).toContain('OBIS-derived marine-grid model');
+    expect(markup).not.toContain('All registered beaches are listed.');
     expect(markup).not.toContain('no currently available species suggestion');
   });
 
-  it('counts truly unavailable wildlife only after the evidence endpoint returns', () => {
+  it('keeps missing-species fallback in individual cards without a warning paragraph above the list', () => {
     prepareWildlifeEvidence();
     state.wildlifeData.beaches.pop();
     const markup = render('/insights/wildlife');
     expect(markup).toContain('97 with curated reference data');
     expect(markup).toContain('81 with OBIS-derived model context');
-    expect(markup).toContain('1 beach has');
-    expect(markup).toContain('no currently available species suggestion');
+    expect(markup).toContain('No species suggestion available');
+    expect(markup).not.toContain('1 beach has');
+    expect(markup).not.toContain('no currently available species suggestion');
+    expect(markup).not.toContain('All registered beaches are listed.');
   });
 
   it('does not mistake loading or a failed wildlife request for unavailable species', () => {
