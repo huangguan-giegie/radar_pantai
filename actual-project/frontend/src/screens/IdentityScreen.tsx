@@ -172,7 +172,11 @@ export default function IdentityScreen() {
                 {newSession.participantId}
               </div>
               <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5, color: 'rgba(221,227,236,.78)' }}>
-                Others see you as Volunteer {newSession.participantId}.
+                {/* Same noun as everywhere else the ID is shown: the account
+                    page says "Participant ID", the home header says
+                    "Participant 5018". This line used to say "Volunteer", which
+                    named the same person two ways on two screens. */}
+                Others see you as Participant {newSession.participantId}.
               </div>
             </div>
 
@@ -329,12 +333,13 @@ export default function IdentityScreen() {
             {error && <ErrorNote title="Could not continue" body={error} />}
 
             {mode === 'new' ? (
-              <>
-                <PrimaryButton onClick={getNewId} disabled={busy}>
-                  {busy ? 'Creating your profile…' : 'Create my profile'}
-                </PrimaryButton>
-                <TextButton onClick={() => setMode('existing')}>I already have a token</TextButton>
-              </>
+              // The segmented control above already switches to the restore
+              // form, so there is no second "I already have a token" link here.
+              // Two controls for one move invited people to wonder whether they
+              // did different things.
+              <PrimaryButton onClick={getNewId} disabled={busy}>
+                {busy ? 'Creating your profile…' : 'Create my profile'}
+              </PrimaryButton>
             ) : (
               <form onSubmit={useExistingId} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -391,8 +396,6 @@ export default function IdentityScreen() {
                 <PrimaryButton type="submit" trailingArrow={canRestore} disabled={!canRestore}>
                   {busy ? 'Checking…' : 'Restore profile'}
                 </PrimaryButton>
-                <TextButton onClick={() => setMode('new')}>+ Create a new profile</TextButton>
-
               </form>
             )}
 

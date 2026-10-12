@@ -11,7 +11,7 @@
 // guard for corrections, and the way back from the review screen.
 import { describe, expect, it } from 'vitest';
 import type { ReportDraft } from './AppContext';
-import { CAME_FROM_DETAILS, backFromReview, buildReportSubmission, findExactDuplicateReport, finishReportSubmission, formatReportComposition, guardStep, hasDraftProgress, historicalPhotoUnavailable, orderByNeed, reachableStep, reportOutcome, safeNextPath } from './flowRules';
+import { CAME_FROM_DETAILS, PARTICIPANT_STEP, PARTICIPANT_STEP_COUNT, backFromReview, buildReportSubmission, continueFromDetails, findExactDuplicateReport, finishReportSubmission, formatReportComposition, guardStep, hasDraftProgress, historicalPhotoUnavailable, orderByNeed, reachableStep, reportOutcome, safeNextPath, stepBadgeLabel } from './flowRules';
 import { markerHtml } from './components/BeachMarker';
 import type { BeachSummary } from './types';
 import { attentionStateFor, formatDate } from './theme';
@@ -85,6 +85,70 @@ describe('attentionStateFor', () => {
 
   it('does not trust a band when the count is below the minimum', () => {
     expect(attentionStateFor('High', false, 1).hasBand).toBe(false);
+  });
+});
+
+// What the step badge says. These cases exist because the badges used to be
+// hard-coded strings reading "OF 6", with the details form numbered 5 of 6 - a
+// form the accepted path never shows. Real users saw the badge go 4 straight to
+// 6, which reads as "a step was skipped and my report may be incomplete".
+describe('Participant step numbering', () => {
+  it('numbers the accepted path 1 to 5 with no gap', () => {
+    const accepted = ['photo', 'location', 'confirm', 'suggestions', 'review'] as const;
+    expect(accepted.map((step) => PARTICIPANT_STEP[step])).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  // The manual form is the other way through the same job, so it shares the
+  // number rather than appearing to be an extra step only some users get.
+  it('keeps the details form on the same step as the AI check', () => {
+    expect(PARTICIPANT_STEP.details).toBe(PARTICIPANT_STEP.suggestions);
+  });
+
+  it('never jumps by more than one on the manual path either', () => {
+    const manual = ['photo', 'location', 'confirm', 'suggestions', 'details', 'review'] as const;
+    const numbers = manual.map((step) => PARTICIPANT_STEP[step]);
+    expect(numbers).toEqual([1, 2, 3, 4, 4, 5]);
+    numbers.forEach((number, index) => {
+      if (index > 0) expect(number - numbers[index - 1]).toBeLessThanOrEqual(1);
+    });
+  });
+
+  it('claims no step past the last one it can show', () => {
+    const numbers = Object.values(PARTICIPANT_STEP);
+    expect(Math.min(...numbers)).toBe(1);
+    expect(Math.max(...numbers)).toBe(PARTICIPANT_STEP_COUNT);
+  });
+
+  // A step added to the flow and forgotten here would print "undefined" in the
+  // badge, which is the failure this map is meant to make impossible.
+  it('has a number for every step the flow has', () => {
+    expect(Object.keys(PARTICIPANT_STEP).sort())
+      .toEqual(['confirm', 'details', 'location', 'photo', 'review', 'suggestions']);
+  });
+
+  it('writes the badge a screen shows', () => {
+    expect(stepBadgeLabel('photo', 'PHOTO')).toBe('STEP 1 OF 5 · PHOTO');
+    expect(stepBadgeLabel('suggestions', 'AI CHECK')).toBe('STEP 4 OF 5 · AI CHECK');
+    expect(stepBadgeLabel('details', 'YOUR DETAILS')).toBe('STEP 4 OF 5 · YOUR DETAILS');
+    expect(stepBadgeLabel('review', 'REVIEW')).toBe('STEP 5 OF 5 · REVIEW');
+  });
+});
+
+// Leaving the details form. It used to be able to answer "back to the AI check"
+// as well, and RecordScreen branched on both answers, but the function has
+// returned Review unconditionally since recognition moved ahead of the form.
+// The dead branch is gone; these cases hold what is left.
+describe('Continuing from the details form', () => {
+  it('always goes on to Review, never back to recognition', () => {
+    expect(continueFromDetails(draft()).to).toBe('/report/review');
+    expect(continueFromDetails(draft({ aiModelState: null, aiDecision: null })).to).toBe('/report/review');
+    expect(continueFromDetails(draft({ aiModelState: 'unavailable', aiDecision: null })).to).toBe('/report/review');
+  });
+
+  it('keeps a decision already made, and treats no decision as manual', () => {
+    expect(continueFromDetails(draft({ aiDecision: 'confirmed' })).aiDecision).toBe('confirmed');
+    expect(continueFromDetails(draft({ aiDecision: 'manual' })).aiDecision).toBe('manual');
+    expect(continueFromDetails(draft({ aiDecision: null })).aiDecision).toBe('manual');
   });
 });
 

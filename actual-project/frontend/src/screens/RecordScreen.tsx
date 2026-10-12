@@ -6,7 +6,7 @@ import { AiSuggestionHelp } from '../components/AiSuggestionHelp';
 import { OverlayChip, SectionLabel } from '../components/ds';
 import { Alert } from '../components/Icon';
 import { BackButton, PrimaryButton, StepBadge } from '../components/ui';
-import { continueFromDetails } from '../flowRules';
+import { continueFromDetails, stepBadgeLabel } from '../flowRules';
 import { C, MONO, QUANTITY_DESC } from '../theme';
 import type { LitterCategory, QuantityBand, QuantityByCategory } from '../types';
 import { useAppBack } from '../navigation';
@@ -53,14 +53,9 @@ export default function RecordScreen() {
       setShowErrors(true);
       return;
     }
-    // Step 3 is the AI check. It runs once per photo; coming back here after
-    // it has run goes straight on to Review.
+    // The AI check has already run for this photo by the time anyone reaches
+    // this form, so Continue goes on to Review.
     const step = continueFromDetails(draft);
-    if (step.to === '/report/suggestions') {
-      patchDraft({ itemCounts: null });
-      nav(step.to);
-      return;
-    }
     patchDraft({ itemCounts: null, aiDecision: step.aiDecision });
     nav(step.to, { state: { from: 'details' } });
   }
@@ -80,7 +75,9 @@ export default function RecordScreen() {
             <BackButton dark onClick={back} />
             {beachChip && <OverlayChip>{beachChip}</OverlayChip>}
           </div>
-          <StepBadge dark>STEP 5 OF 6 · DETAILS</StepBadge>
+          {/* Shares step 4 with the AI check: both screens ask what was found,
+              and only one of them is on screen at a time. */}
+          <StepBadge dark>{stepBadgeLabel('details', 'YOUR DETAILS')}</StepBadge>
         </div>
       </div>
 

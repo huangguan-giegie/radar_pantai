@@ -12,6 +12,7 @@ import { BackButton, ErrorNote, PrimaryButton, StepBadge } from '../components/u
 import { C, MONO } from '../theme';
 import { OverlayChip } from '../components/ds';
 import { useApp } from '../AppContext';
+import { stepBadgeLabel } from '../flowRules';
 import { useAppBack } from '../navigation';
 
 
@@ -181,7 +182,7 @@ export default function PhotoScreen() {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <BackButton onClick={() => { uploadRequest.current += 1; back(); }} />
-          <StepBadge>STEP 1 OF 6 · PHOTO</StepBadge>
+          <StepBadge>{stepBadgeLabel('photo', 'PHOTO')}</StepBadge>
         </div>
 
         <div>

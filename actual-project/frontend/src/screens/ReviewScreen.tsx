@@ -13,7 +13,7 @@ import { C, formatDate } from '../theme';
 import { Alert, InfoChip, OverlayChip, StatusBadge } from '../components/ds';
 import { useApp } from '../AppContext';
 import type { BeachSummary, LitterCategory, LitterReport, QuantityBand } from '../types';
-import { buildReportSubmission, findExactDuplicateReport, finishReportSubmission, isSmallOnlyRejection } from '../flowRules';
+import { buildReportSubmission, findExactDuplicateReport, finishReportSubmission, isSmallOnlyRejection, stepBadgeLabel } from '../flowRules';
 import { linkEventReportData } from '../iteration2Api';
 import { useAppBack } from '../navigation';
 import { pendingReportSave } from '../pendingReportSave';
@@ -188,7 +188,7 @@ export default function ReviewScreen() {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <BackButton onClick={backToDetails} disabled={busy} />
-          <StepBadge>STEP 6 OF 6 · REVIEW</StepBadge>
+          <StepBadge>{stepBadgeLabel('review', 'REVIEW')}</StepBadge>
         </div>
 
         <div>

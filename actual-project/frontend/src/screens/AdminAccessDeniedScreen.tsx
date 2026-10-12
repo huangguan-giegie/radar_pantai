@@ -52,7 +52,10 @@ export default function AdminAccessDeniedScreen() {
         </div>
 
         <SignedInBanner tone="participant">
-          Participant account · Volunteer {user?.participantId}
+          {/* "Participant", matching the console's own "Platform admin ·
+              Participant 5018" and the home header. This line used to call the
+              same person a "Volunteer". */}
+          Participant account · Participant {user?.participantId}
         </SignedInBanner>
 
         <Alert title="Not authorised" tone="error">

@@ -663,16 +663,29 @@
   margin-top: -32px;
   background: none !important;
 }
-.home-tab .tab-icon {
-  background: var(--coastal-navy);
-  color: white;
+/*
+ * The raised disc above the bar. Its position never changes - it is part of the
+ * silhouette, and moving it would shove the other four tabs sideways on every
+ * navigation. Colour is what carries the selection instead, and it has to:
+ * painted navy the whole time, the disc read as "Home is the current tab" on
+ * all four other tabs, so a user on Account or My reports saw two tabs claiming
+ * to be selected and the same navy circle on every screen.
+ */
+.coastal-tabs .home-tab .tab-icon {
+  background: #e8ecf3;
+  color: #7a879b;
   width: 56px;
   height: 56px;
   border-radius: 50%;
   border: 5px solid #f7f8fa;
-  box-shadow: 0 4px 10px #0b216126;
+  box-shadow: 0 3px 8px #0b216114;
   display: grid;
   place-items: center;
+}
+.coastal-tabs .home-tab[aria-current="page"] .tab-icon {
+  background: var(--coastal-navy);
+  color: #ffffff;
+  box-shadow: 0 4px 10px #0b216126;
 }
 .section-heading {
   display: flex;

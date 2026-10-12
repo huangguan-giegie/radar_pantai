@@ -27,6 +27,39 @@ const STEP_PATH: Record<ReportStep, string> = {
   review: '/report/review',
 };
 
+/**
+ * The steps a participant is told about, numbered 1 to 5.
+ *
+ * `details` deliberately shares step 4 with the AI check: the two screens ask
+ * the same question - what did you find - and a ready suggestion goes straight
+ * from one to Review, while "Enter manually" lands on the form instead. They
+ * are two ways through one step, not two steps.
+ *
+ * This map only decides what the badge says. The order the URL guards use is
+ * STEP_ORDER, which is a different question and stays as it is.
+ *
+ * Why it is written down here at all: the badges used to be hard-coded strings
+ * reading "OF 6", with the details form numbered 5. On the accepted path that
+ * step never appears, so the badge jumped 4 -> 6, which reads as "something was
+ * skipped and maybe not saved". Numbering the steps in one place means a badge
+ * cannot claim a step the flow does not show.
+ */
+export const PARTICIPANT_STEP: Record<ReportStep, number> = {
+  photo: 1,
+  location: 2,
+  confirm: 3,
+  suggestions: 4,
+  details: 4,
+  review: 5,
+};
+
+export const PARTICIPANT_STEP_COUNT = 5;
+
+/** Badge text for a report step, e.g. "STEP 4 OF 5 · AI CHECK". */
+export function stepBadgeLabel(step: ReportStep, name: string): string {
+  return `STEP ${PARTICIPANT_STEP[step]} OF ${PARTICIPANT_STEP_COUNT} · ${name}`;
+}
+
 export function hasDraftProgress(draft: ReportDraft): boolean {
   return Boolean(
     draft.photo
@@ -111,19 +144,23 @@ export function reachableStep(draft: ReportDraft): ReportStep {
   return 'review';
 }
 
-export type DetailsContinue =
-  | { to: '/report/suggestions' }
-  | { to: '/report/review'; aiDecision: 'confirmed' | 'manual' };
+export type DetailsContinue = { to: '/report/review'; aiDecision: 'confirmed' | 'manual' };
 
 /**
  * Where Continue on the details step goes.
  *
- * The AI check runs once per photo. aiModelState is null until it has run, and
- * a new photo resets it (AppContext.patchDraft), so a fresh photo is always
- * checked. Once it has run, Continue goes straight to Review and keeps any
- * decision already made: values kept as manual stay manual after an edit.
- * With no decision yet, bands the user reached from a ready suggestion count
- * as a confirmed suggestion, and anything else as manual.
+ * Always Review: the details form is the last place a band can change, and the
+ * AI check has already run for this photo by the time we are here.
+ *
+ * aiModelState is null until recognition has run, and a new photo resets it
+ * (AppContext.patchDraft), so a fresh photo always gets checked first. Once it
+ * has run, Continue keeps any decision already made: values kept as manual stay
+ * manual after an edit, and with no decision yet the bands count as manual.
+ *
+ * This used to return either '/report/suggestions' or '/report/review', and
+ * RecordScreen still branched on both. The suggestions branch was dead - the
+ * function has returned Review unconditionally since recognition moved ahead of
+ * the form - so it is gone rather than left as a trap for the next reader.
  */
 export function continueFromDetails(draft: ReportDraft): DetailsContinue {
   return {

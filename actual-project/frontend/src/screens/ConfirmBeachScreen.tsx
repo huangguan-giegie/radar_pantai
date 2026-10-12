@@ -13,6 +13,7 @@ import { BackButton, ErrorNote, PrimaryButton, Skeleton, StepBadge, TextButton }
 import { attentionStateFor, C, MONO } from '../theme';
 import { OverlayChip, SeverityBadge } from '../components/ds';
 import { useApp } from '../AppContext';
+import { stepBadgeLabel } from '../flowRules';
 import type { BeachSummary } from '../types';
 import type { ReportDraft } from '../AppContext';
 import { useAppBack } from '../navigation';
@@ -91,7 +92,7 @@ export default function ConfirmBeachScreen() {
         onClick={back}
         style={{ position: 'absolute', top: 'var(--top-inset)', left: 18, zIndex: 820, background: 'rgba(255,255,255,.85)', backdropFilter: 'blur(10px)' }}
       />
-      <div style={{ position: 'absolute', top: 'var(--top-inset)', right: 18, zIndex: 820 }}><StepBadge>STEP 3 OF 6 · BEACH</StepBadge></div>
+      <div style={{ position: 'absolute', top: 'var(--top-inset)', right: 18, zIndex: 820 }}><StepBadge>{stepBadgeLabel('confirm', 'BEACH')}</StepBadge></div>
       <OverlayChip
         tone="light"
         style={{ position: 'absolute', top: 'var(--top-inset)', left: '50%', transform: 'translateX(-50%)', zIndex: 820 }}
