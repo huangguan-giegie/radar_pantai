@@ -600,7 +600,7 @@
       "id": "blood-cockle",
       "figmaId": "2204:13070",
       "name": "Blood Cockle",
-      "subtitle": "Pantai Remis record · species named in study",
+      "subtitle": "",
       "intro": "Pantai Remis samples showed microplastics in a 2024 study.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -637,7 +637,7 @@
       "id": "shorebirds",
       "figmaId": "2204:13143",
       "name": "Shorebirds",
-      "subtitle": "Bird group · species not identified",
+      "subtitle": "",
       "intro": "A local guide records shorebirds at Pantai Redang without naming species.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -674,7 +674,7 @@
       "id": "macaques",
       "figmaId": "2204:13216",
       "name": "Macaques",
-      "subtitle": "Mammal group · species not identified",
+      "subtitle": "",
       "intro": "Documented around Monkey Beach; the guide does not identify a species.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -859,7 +859,7 @@
       "id": "horseshoe-crab",
       "figmaId": "2204:13581",
       "name": "Horseshoe Crab",
-      "subtitle": "Balok spawning record · species named in study",
+      "subtitle": "",
       "intro": "Spawning was recorded at Pantai Balok during 2009–2013.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -896,7 +896,7 @@
       "id": "clownfish",
       "figmaId": "2212:13960",
       "name": "Clownfish",
-      "subtitle": "Organism group · species not identified",
+      "subtitle": "",
       "intro": "Clownfish shelter among sea anemones. This card does not identify a species.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -933,7 +933,7 @@
       "id": "corals",
       "figmaId": "2212:14035",
       "name": "Corals",
-      "subtitle": "Organism group · species not identified",
+      "subtitle": "",
       "intro": "Corals are animals. Many reef-building kinds create shelter for marine life.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -974,7 +974,7 @@
       "id": "seagrass",
       "figmaId": "2212:14110",
       "name": "Seagrass",
-      "subtitle": "Organism group · species not identified",
+      "subtitle": "",
       "intro": "Seagrasses are rooted, flowering marine plants that form underwater meadows.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -1011,8 +1011,8 @@
       "id": "mangroves",
       "figmaId": "2212:14185",
       "name": "Mangroves",
-      "subtitle": "Organism group · species not identified",
-      "intro": "Mangroves are coastal plants that form tidal forests and support wildlife.",
+      "subtitle": "",
+      "intro": "Mangroves are coastal plants that form tidal forests and support marine life.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
         {
@@ -1048,7 +1048,7 @@
       "id": "sea-turtles",
       "figmaId": "2212:14260",
       "name": "Sea Turtles",
-      "subtitle": "Organism group · species not identified",
+      "subtitle": "",
       "intro": "Sea turtles use marine waters and return to land to nest. This card does not name a species.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -1084,8 +1084,8 @@
     {
       "id": "grubeulepis-malayensis",
       "figmaId": "2213:14237",
-      "name": "Grubeulepis malayensis",
-      "subtitle": "Morib scaleworm · historical local record",
+      "name": "Morib Scaleworm",
+      "subtitle": "Grubeulepis malayensis",
       "intro": "A small scaleworm first described from specimens collected at Morib Beach.",
       "evidence": "From published sources · not a live sighting",
       "answers": [
@@ -1117,8 +1117,8 @@
     {
       "id": "thalassina-kelanang",
       "figmaId": "2213:14312",
-      "name": "Thalassina kelanang",
-      "subtitle": "Mud lobster · historical local record",
+      "name": "Mud Lobster",
+      "subtitle": "Thalassina kelanang",
       "intro": "A mud lobster species described from Kelanang Beach.",
       "evidence": "From published sources · not a live sighting",
       "answers": [

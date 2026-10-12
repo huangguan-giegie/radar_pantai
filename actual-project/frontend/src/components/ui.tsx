@@ -17,6 +17,7 @@
 // reader - all of which a clickable <div> silently throws away.
 import { useEffect, type CSSProperties, type ReactNode } from 'react';
 import { C, MONO } from '../theme';
+import { actionTitle } from '../presentation';
 import { ArrowRight, ChevronLeft } from './Icon';
 
 /**
@@ -48,7 +49,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={disabled ? 'press' : 'btn-primary press'}
+      className={disabled ? 'btn-primary press is-disabled' : 'btn-primary press'}
       style={{
         minHeight: height,
         borderRadius: 18,
@@ -61,7 +62,7 @@ export function PrimaryButton({
         padding: '12px 18px',
         textAlign: 'center',
         lineHeight: 1.3,
-        fontSize: 15.5,
+        fontSize: 14,
         fontWeight: 650,
         cursor: disabled ? 'not-allowed' : 'pointer',
         boxShadow: disabled ? 'none' : '0 16px 32px -14px rgba(11,33,97,.55)',
@@ -69,7 +70,7 @@ export function PrimaryButton({
         ...style,
       }}
     >
-      {children}
+      {typeof children === 'string' ? actionTitle(children) : children}
       {trailingArrow && <ArrowRight />}
     </button>
   );
@@ -111,13 +112,13 @@ export function GhostButton({
         padding: '11px 18px',
         textAlign: 'center',
         lineHeight: 1.3,
-        fontSize: 15,
-        fontWeight: 620,
+        fontSize: 14,
+        fontWeight: 650,
         width: '100%',
         ...style,
       }}
     >
-      {children}
+      {typeof children === 'string' ? actionTitle(children) : children}
     </button>
   );
 }
@@ -144,7 +145,7 @@ export function TextButton({
       className="link-hover"
       style={{
         textAlign: 'center',
-        fontSize: 13.5,
+        fontSize: 14,
         color: C.muted,
         padding: 8,
         fontWeight: 600,
@@ -188,7 +189,7 @@ export function DraftChoiceDialog({
         style={{ width: 'min(100%, 420px)', borderRadius: 22, background: C.white, border: `1px solid ${C.line}`, boxShadow: '0 26px 70px rgba(6,18,47,.28)', padding: 20 }}
       >
         <div id="draft-choice-title" style={{ fontSize: 18, fontWeight: 720, color: C.ink2 }}>Unfinished report found</div>
-        <p style={{ margin: '8px 0 16px', fontSize: 13.5, lineHeight: 1.55, color: C.muted }}>
+        <p style={{ margin: '8px 0 16px', fontSize: 14, lineHeight: 1.55, color: C.muted }}>
           Continue where you stopped, or explicitly discard that draft and start a new report.
         </p>
         <div style={{ display: 'grid', gap: 9 }}>
@@ -380,7 +381,7 @@ export function ErrorNote({ title, body, onRetry }: { title: string; body?: stri
       }}
     >
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 650, color: C.red }}>{title}</div>
+        <div style={{ fontSize: 14, fontWeight: 650, color: C.red }}>{title}</div>
         {body && (
           <div style={{ fontSize: 12, color: '#8A5049', marginTop: 3, lineHeight: 1.5 }}>{body}</div>
         )}

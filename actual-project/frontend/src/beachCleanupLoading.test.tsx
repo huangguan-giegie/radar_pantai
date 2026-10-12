@@ -19,7 +19,7 @@ describe('beach cleanup availability', () => {
     expect(html).toContain('Checking cleanup availability');
     expect(html).not.toContain('No active cleanup report');
     expect(html).not.toContain('Nothing to clean up');
-    expect(html).not.toContain('Report litter here');
+    expect(html).not.toContain('Report Litter Here');
     expect(html).not.toContain('Add a Cleanup');
   });
 
@@ -31,15 +31,15 @@ describe('beach cleanup availability', () => {
   it('shows a retry rather than an empty result when the request fails', () => {
     const html = renderCard(null, false, 'Network unavailable');
     expect(html).toContain('Could not check cleanup availability');
-    expect(html).toContain('Try again');
+    expect(html).toContain('Try Again');
     expect(html).not.toContain('No active cleanup report');
-    expect(html).not.toContain('Report litter here');
+    expect(html).not.toContain('Report Litter Here');
   });
 
   it('offers reporting only after the API confirms there is no active target', () => {
     const html = renderCard(null);
     expect(html).toContain('No active cleanup report');
-    expect(html).toContain('Report litter here');
+    expect(html).toContain('Report Litter Here');
     expect(html).not.toContain('Nothing to clean up');
     expect(html).not.toContain('Add a Cleanup');
   });
@@ -48,6 +48,6 @@ describe('beach cleanup availability', () => {
     const html = renderCard(target);
     expect(html).toContain('Add a Cleanup');
     expect(html).not.toContain('No active cleanup report');
-    expect(html).not.toContain('Report litter here');
+    expect(html).not.toContain('Report Litter Here');
   });
 });

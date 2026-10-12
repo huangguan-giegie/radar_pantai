@@ -55,14 +55,14 @@ describe('production Insights scope and count labels', () => {
     try {
       const previousScrollContainer = view.root.findByType('main');
       const wildlifeTile = view.root.findAllByProps({ className: 'action-tile press' }).find(
-        tile => tile.findAllByType('strong').some(text => text.children.join('') === 'Wildlife'),
+        tile => tile.findAllByType('strong').some(text => text.children.join('') === 'Marine Life'),
       );
       expect(wildlifeTile).toBeDefined();
       act(() => { wildlifeTile!.props.onClick(); });
       const wildlifeScrollContainer = view.root.findByType('main');
       expect(wildlifeScrollContainer).not.toBe(previousScrollContainer);
       expect(wildlifeScrollContainer.props.className).toContain('scroll-y');
-      expect(view.root.findByType('h1').children.join('')).toBe('Wildlife Nearby');
+      expect(view.root.findByType('h1').children.join('')).toBe('Marine Life Nearby');
     } finally {
       act(() => { view.unmount(); });
     }
@@ -99,13 +99,15 @@ describe('production Insights scope and count labels', () => {
     prepareWildlifeEvidence();
     const markup = render('/insights/wildlife');
     expect(markup).toContain('179');
-    expect(markup).toContain('97 with curated reference data');
-    expect(markup).toContain('82 with OBIS-derived model context');
+    expect(markup).toContain('97 <small>beaches</small></strong><span>Curated coastal references');
+    expect(markup).toContain('82 <small>beaches</small></strong><span>OBIS-derived model context');
     expect(markup).toContain('Coastal Beach 178');
     expect(markup).toContain('OBIS modelled turtle');
     expect(markup).not.toContain('Legacy species 0');
     expect(markup).toContain('Curated coastal reference');
-    expect(markup).toContain('OBIS-derived marine-grid model');
+    expect(markup).toContain('OBIS-derived model context');
+    expect(markup).not.toContain('These figures cover beaches listed in Radar Sampah');
+    expect(markup).not.toContain('No marine life data yet</span>');
     expect(markup).not.toContain('All registered beaches are listed.');
     expect(markup).not.toContain('no currently available species suggestion');
   });
@@ -114,9 +116,9 @@ describe('production Insights scope and count labels', () => {
     prepareWildlifeEvidence();
     state.wildlifeData.beaches.pop();
     const markup = render('/insights/wildlife');
-    expect(markup).toContain('97 with curated reference data');
-    expect(markup).toContain('81 with OBIS-derived model context');
-    expect(markup).toContain('No species suggestion available');
+    expect(markup).toContain('97 <small>beaches</small></strong><span>Curated coastal references');
+    expect(markup).toContain('81 <small>beaches</small></strong><span>OBIS-derived model context');
+    expect(markup).toContain('No published reference or modelled context is currently available for Coastal Beach 178');
     expect(markup).not.toContain('1 beach has');
     expect(markup).not.toContain('no currently available species suggestion');
     expect(markup).not.toContain('All registered beaches are listed.');
@@ -127,14 +129,14 @@ describe('production Insights scope and count labels', () => {
     state.wildlifeData = null;
     state.wildlifeLoading = true;
     const loading = render('/insights/wildlife');
-    expect(loading).toContain('checking wildlife sources');
+    expect(loading).toContain('Checking marine life sources');
     expect(loading).not.toContain('no currently available species suggestion');
     state.wildlifeLoading = false;
     state.wildlifeError = 'network failed';
     const failure = render('/insights/wildlife');
-    expect(failure).toContain('Wildlife source data temporarily unavailable');
+    expect(failure).toContain('Marine life source data temporarily unavailable');
     expect(failure).not.toContain('no currently available species suggestion');
-    expect(failure).not.toContain('0 with curated reference data');
+    expect(failure).not.toContain('marine-coverage-stats');
   });
 
   it('labels cleanup history and active scoring windows separately', () => {

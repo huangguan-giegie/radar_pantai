@@ -5,6 +5,7 @@ import { ArrowRight, ChevronRight, Close } from "./Icon";
 import { BackButton, GhostButton } from "./ui";
 import { C } from "../theme";
 import { useAppBack } from "../navigation";
+import { actionTitle } from "../presentation";
 
 export function CoastalPage({
   children,
@@ -121,7 +122,7 @@ export function ActionTile({
     <button className="action-tile press" onClick={onClick}>
       <span className="tile-icon">{icon}</span>
       <ChevronRight color={C.lime} />
-      <strong>{title}</strong>
+      <strong>{actionTitle(title)}</strong>
       <span>{subtitle}</span>
     </button>
   );

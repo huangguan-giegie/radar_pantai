@@ -101,18 +101,18 @@ export default function WelcomeScreen() {
         }}
       >
         <div style={{ fontSize: 41, lineHeight: 1.06, fontWeight: 620, letterSpacing: '-1.2px', color: C.bg }}>
-          Your beach walk
+          Every beach walk
           <br />
-          can count for something.
+          can make a difference.
         </div>
         <div style={{ fontSize: 14.5, lineHeight: 1.55, color: 'rgba(232,238,245,.82)', maxWidth: 310 }}>
-          Explore Malaysia’s beaches. Report litter. Care for marine life.
+          Explore Malaysia’s beaches, report litter, and support cleaner coasts for marine life.
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
           <button
             type="button"
             onClick={() => nav('/home')}
-            className="press"
+            className="btn-primary press"
             style={{
               height: 56,
               borderRadius: 18,
@@ -133,7 +133,7 @@ export default function WelcomeScreen() {
           <button
             type="button"
             onClick={() => nav('/identity?next=/home')}
-            className="press"
+            className="btn-ghost press"
             style={{
               height: 56,
               borderRadius: 18,
@@ -148,10 +148,10 @@ export default function WelcomeScreen() {
               fontWeight: 600,
             }}
           >
-            Count Me In
+            Count Me in
           </button>
           <div style={{ textAlign: 'center', fontSize: 12, color: 'rgba(221,227,236,.7)', lineHeight: 1.5 }}>
-            You'll only need an ID when you add something.
+            You’ll only need to sign in to save your activity.
           </div>
           {/* Same credit format as Home and the species cards. */}
           <div style={{ textAlign: 'center', fontSize: 9.5, color: 'rgba(221,227,236,.55)', lineHeight: 1.5 }}>

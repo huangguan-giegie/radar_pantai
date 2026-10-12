@@ -70,7 +70,7 @@ export function SpeciesModelCards({
       </div>
       {cards.length === 0 ? (
         <div style={{ border: `1.5px dashed ${C.line2}`, borderRadius: 22, padding: 20, fontSize: 13, lineHeight: 1.5, color: C.muted }}>
-          No species recommendations are available for this marine location. This is not evidence that wildlife is absent.
+          No species recommendations are available for this marine location. This is not evidence that marine life is absent.
         </div>
       ) : (
         <div className="scroll-x" style={{ display: 'flex', gap: 12, paddingBottom: 6, margin: '0 -16px', paddingInline: 16, scrollSnapType: 'x proximity' }}>

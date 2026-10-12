@@ -400,7 +400,7 @@ export default function BeachScreen() {
           onClick={() => nav('/insights/trends/' + encodeURIComponent(beachId))}
           style={{ display: 'block', marginTop: 14, color: C.navy, fontSize: 12.5, fontWeight: 700, textAlign: 'left' }}
         >
-          See whether this beach improved or worsened in the last 30 days →
+          See Whether This Beach Improved or Worsened in the Last 30 Days →
         </button>
       </GlassPanel>
 

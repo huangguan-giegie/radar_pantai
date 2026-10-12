@@ -145,7 +145,7 @@ export default function CheckInScreen() {
 
   return (
     <div className="screen scroll-y" style={{ zIndex: 26 }}>
-      {reminder && <Sheet title="Two Quick Reminders" onClose={() => setReminder(false)}>{(wildlife?.reminder ?? ['Do not handle stranded or entangled animals', 'Keep away from nests and burrows']).map((tip, index) => <div key={tip} className="wildlife-rule"><span>{index + 1}</span><p>{tip}</p></div>)}<PrimaryButton onClick={() => setReminder(false)}>Got It</PrimaryButton></Sheet>}
+      {reminder && <Sheet title="Two Quick Reminders" onClose={() => setReminder(false)}>{(wildlife?.reminder ?? ['Do not handle stranded or entangled animals', 'Keep away from nests and burrows']).map((tip, index) => <div key={tip} className="wildlife-rule"><span>{index + 1}</span><p>{tip}</p></div>)}<PrimaryButton onClick={() => setReminder(false)}>Understood</PrimaryButton></Sheet>}
       <div className="measure i2-page anim-fade-up" style={{ paddingBottom: 'calc(var(--safe-bottom) + 34px)' }}>
         <BackButton onClick={back} />
         <div>

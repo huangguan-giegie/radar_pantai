@@ -19,7 +19,7 @@ import {
   Search,
   SpeciesIcon,
 } from "../components/Icon";
-import { GhostButton, PrimaryButton, Skeleton } from "../components/ui";
+import { DraftChoiceDialog, GhostButton, PrimaryButton, Skeleton } from "../components/ui";
 import { SeverityBadge } from "../components/ds";
 import { INSIGHTS_PREVIEW as preview } from "../content/insightsPreview";
 import { C, formatDate, severityLabel } from "../theme";
@@ -31,7 +31,10 @@ import type { PersonalInsights } from "../iteration3Personal";
 import { getCoastalBeaches } from "../coastalData";
 import { PlaceThumb } from "../components/Visuals";
 import { beachPhoto, speciesPhoto } from "../visuals";
-import { PHOTOS } from '../visuals';
+import { PersonalInsightCard } from '../components/PersonalInsightCard';
+import { MarineCoverageSummary } from '../components/MarineCoverageSummary';
+import { beachMarineCards } from '../beachMarineLife';
+import { hasDraftProgress, resumePath } from '../flowRules';
 import { personalInsightsPreview } from '../personalInsightsPreview';
 
 export function MetricBars({ rows }: { rows: [string, number][] }) {
@@ -59,13 +62,30 @@ const nextReportPhrase = (days: number | null) => days == null ? 'next report re
 export default function InsightsScreen() {
   const nav = useNavigate();
   const [params, setParams] = useSearchParams();
-  const { user, reportsVersion } = useApp();
+  const { user, reportsVersion, draft, resetDraft, patchDraft, setLastSavedReport } = useApp();
+  const [pendingReport, setPendingReport] = useState<{ path: string; beachId?: string; beachName?: string } | null>(null);
   const personalOpen = params.get('panel') === 'personal';
   const setPersonalOpen = (open: boolean) => setParams(previous => {
     const next = new URLSearchParams(previous);
     if (open) next.set('panel', 'personal'); else next.delete('panel');
     return next;
   }, { replace: true });
+  const beginPersonalReport = (target: { path: string; beachId?: string; beachName?: string }) => {
+    resetDraft();
+    setLastSavedReport(null);
+    if (target.beachId && target.beachName) patchDraft({ beachId: target.beachId,
+      beachName: target.beachName, locationSource: 'manual', coords: null });
+    setPendingReport(null);
+    nav(target.path);
+  };
+  const openPersonalAction = (path: string, section?: PersonalInsights['sections'][number]) => {
+    setPersonalOpen(false);
+    if (!path.startsWith('/report/photo')) { nav(path); return; }
+    const target = { path, beachId: section?.facts?.beachId ?? new URLSearchParams(path.split('?')[1]).get('beach') ?? undefined,
+      beachName: section?.facts?.beachName };
+    if (hasDraftProgress(draft)) setPendingReport(target);
+    else beginPersonalReport(target);
+  };
   const { data: personal, loading, error, refresh } = useAsyncData(
     () => user && personalOpen ? USE_MOCK ? personalInsightsPreview(user.participantId) : iteration3Request<PersonalInsights>('/personal-insights') : Promise.resolve(null),
     [user?.participantId, reportsVersion, personalOpen],
@@ -87,34 +107,22 @@ export default function InsightsScreen() {
           Please try again to load your personal insights.
         </DataUnavailable>
       ) : personal?.sections.length ? personal.sections.map(section => (
-        <WhiteCard key={section.id} className="personal-insight-card">
-          <header className="personal-card-header"><span className="personal-icon">{section.id === 'litter_wildlife' ? <SpeciesIcon glyph="turtle" size={18} color={C.lime} /> : <BarChart size={18} color={C.lime} />}</span><p className="eyebrow">{section.title}</p></header>
-          {section.aiAssisted && <p className="coastal-footnote">AI-assisted</p>}
-          {section.id === 'litter_wildlife' && section.facts ? <>
-            <div className="personal-litter-fact"><div><p className="subtle">Top category in your reports</p><strong>{section.facts.category}</strong><small>{section.facts.reportCount} counted reports</small></div><img src={PHOTOS.turtle} alt="Sea turtle · species example" /></div>
-            <div className="personal-insight-risk"><p className="eyebrow">May affect</p><strong>{section.facts.speciesGroups?.join(' · ')}</strong><small>{section.facts.riskType}</small></div>
-            <p className="coastal-footnote">General research · no local harm shown</p>
-          </> : section.id === 'since_cleanup' && section.facts ? <>
-            <div className="personal-cleanup-fact"><div><strong>{section.facts.intervalDays ?? section.facts.daysSinceCleanup ?? '—'}</strong><small>DAYS</small></div><div><b>{section.facts.beachName}</b><p className="subtle">{section.facts.intervalDays != null ? 'From your cleanup to the next counted report' : 'Since your recorded cleanup'}</p></div></div>
-            {section.facts.intervalDays == null && <p className="coastal-footnote">{section.facts.followUpStatus ?? 'No follow-up report yet'}</p>}
-            <p className="coastal-footnote">Community reporting, not measured litter return</p>
-          </> : section.id === 'persistent_litter' && section.facts ? <>
-            <p className="personal-insight-fact">{section.facts.category}</p><p className="subtle">{section.text || `Remained above Small in ${section.facts.remainingCleanupCount} of ${section.facts.includedCleanupCount} eligible cleanups.`}</p>
-          </> : <p className="subtle">{section.text}</p>}
-          {section.sources.map(source => <p className="coastal-footnote personal-source" key={source.url}>
-            <a href={source.url} target={source.url.startsWith('https://') ? '_blank' : undefined} rel="noreferrer">{source.label}</a>
-            {section.reviewDate && ' · Reviewed ' + section.reviewDate}
-          </p>)}
-          <LinkRow title={section.action.label} onClick={() => nav(section.action.path)} />
-        </WhiteCard>
+        <PersonalInsightCard key={section.id} section={section} onNavigate={path => openPersonalAction(path, section)} />
       )) : (
-        <DataUnavailable title="Your Insights">
+        <DataUnavailable title="No Insights Yet">
           {personal?.emptyStateMessage ?? 'Report litter or finish a cleanup to unlock personal insights.'}
+          <div className="action-grid personal-empty-actions">
+            <ActionTile title="Report Litter" subtitle="Save a counted report" icon={<BarChart size={18} />} onClick={() => openPersonalAction('/report/photo')} />
+            <ActionTile title="Log Cleanup" subtitle="Choose your beach" icon={<Check size={18} />} onClick={() => { setPersonalOpen(false); nav('/map'); }} />
+          </div>
         </DataUnavailable>
       )}
       <div className="personal-footer-actions"><PrimaryButton height={48} onClick={() => { setPersonalOpen(false); nav('/insights'); }}>View Beach Insights</PrimaryButton>
-      <GhostButton height={48} onClick={() => { setPersonalOpen(false); nav(personal?.links.map ?? '/map'); }}>Open the map</GhostButton></div>
+      <GhostButton height={48} onClick={() => { setPersonalOpen(false); nav(personal?.links.map ?? '/map'); }}>Open the Map</GhostButton></div>
     </Sheet>}
+    {pendingReport && <DraftChoiceDialog onCancel={() => { setPendingReport(null); setPersonalOpen(true); }}
+      onResume={() => { setPendingReport(null); nav(resumePath(draft)); }}
+      onStartNew={() => beginPersonalReport(pendingReport)} />}
   </>;
 }
 
@@ -143,23 +151,20 @@ function WildlifeCoverage({ beaches }: { beaches: InsightsData['wildlife'] }) {
   const curatedCount = loaded ? beaches.filter(beach => hasSource(beach.beachId, 'published_reference')).length : 0;
   const modelledCount = loaded ? beaches.filter(beach => hasSource(beach.beachId, 'modelled')).length : 0;
   return <>
-    <SummaryCard eyebrow="Wildlife coverage · curated references & OBIS model" value={beaches.length}
-      description={loaded
-        ? `beaches · ${curatedCount} with curated reference data · ${modelledCount} with OBIS-derived model context`
-        : loading ? 'beaches · checking wildlife sources…' : 'beaches · wildlife source data unavailable'} />
-    {loading && <p className="coastal-footnote">Loading wildlife evidence and OBIS-derived model context…</p>}
-    {!loading && !loaded && <DataUnavailable title="Wildlife source data temporarily unavailable" retry={() => { void refresh(); }}>The wildlife endpoint could not be loaded. Missing API data is not evidence that a beach has no species.</DataUnavailable>}
+    <MarineCoverageSummary total={beaches.length} published={curatedCount} modelled={modelledCount} available={loaded} />
+    {loading && <p className="coastal-footnote">Checking marine life sources…</p>}
+    {!loading && !loaded && <DataUnavailable title="Marine life source data temporarily unavailable" retry={() => { void refresh(); }}>Please retry to load the marine life information.</DataUnavailable>}
     {beaches.map(beach => {
       const model = loaded ? byBeach.get(beach.beachId) : undefined;
       const sourceStatus = model?.sourceStatus;
       const hasValidEvidence = sourceStatus === 'published_reference' || sourceStatus === 'modelled';
       const names = hasValidEvidence ? model?.species.map(item => item.name) ?? [] : [];
       const contextLabel = !loaded
-        ? loading ? 'Checking wildlife sources…' : 'Wildlife source data temporarily unavailable'
+        ? loading ? 'Checking marine life sources…' : 'Marine life source data temporarily unavailable'
         : names.length && sourceStatus === 'published_reference' ? 'Curated coastal reference'
         : names.length && sourceStatus === 'modelled'
-          ? `OBIS-derived marine-grid model${model?.coordinateContext ? ` · ${model.coordinateContext.distanceKm.toFixed(1)} km reference distance` : ''}`
-          : 'Species context not yet available';
+          ? 'OBIS-derived marine-grid model'
+          : 'No marine life data yet';
       const habitat = beach.habitat === 'Biodiversity information not yet available'
         ? 'Marine habitat not individually documented' : beach.habitat;
       return <button className="wildlife-beach-card" key={beach.beachId} onClick={() => nav('/beach/' + beach.beachId)}>
@@ -167,10 +172,10 @@ function WildlifeCoverage({ beaches }: { beaches: InsightsData['wildlife'] }) {
         <span className="wildlife-species">{names.length ? names.map(name => {
           const photo = speciesPhoto(name);
           return <span key={name} className={photo ? 'has-photo' : undefined}>{photo && <img src={photo} alt="" loading="lazy" />}{name}</span>;
-        }) : <span>{loading ? 'Checking wildlife sources…' : loaded ? 'No species suggestion available' : 'Wildlife data unavailable'}</span>}</span>
+        }) : <span>{loading ? 'Checking marine life sources…' : loaded ? `No published reference or modelled context is currently available for ${beach.name}. This is not evidence that marine life is absent in the area.` : 'Marine life data unavailable'}</span>}</span>
       </button>;
     })}
-    <p className="coastal-footnote">Curated references may describe coastal habitats or broader regions rather than sightings at the named beach. Model suggestions use frozen historical OBIS-derived scores from a marine grid within 15 km of each supplied reference coordinate. They are not occurrence probabilities or verified local observations.</p>
+
   </>;
 }
 
@@ -194,8 +199,8 @@ function LiveInsightsScreen({ personalAction }: { personalAction: ReactNode }) {
     return next;
   }, { replace: true });
   const active = topic === 'participation' ? 'participation' : topic.startsWith('cleanup') ? 'cleanup' : 'trends';
-  const title = !topic ? 'Insights' : topic === 'trends' ? beachId ? 'Beach Trend' : 'Beach Trends'
-    : topic === 'participation' ? 'Participation' : topic === 'wildlife' ? 'Wildlife Nearby'
+  const title = !topic ? 'Beach Insights' : topic === 'trends' ? beachId ? 'Beach Trend' : 'Beach Trends'
+    : topic === 'participation' ? 'Participation' : topic === 'wildlife' ? 'Marine Life Nearby'
       : topic === 'cleanup-history' ? 'Cleanup History' : 'Cleanup Results';
   const chips = <div className="coastal-segments" aria-label="Insight topics">
     {['trends', 'cleanup', 'participation'].map(t => <button key={t} aria-pressed={active === t} onClick={() => nav('/insights/' + t)}>
@@ -226,7 +231,7 @@ function LiveInsightsScreen({ personalAction }: { personalAction: ReactNode }) {
     const changed = data.beaches.filter(b => b.from && b.to && b.from !== b.to);
     body = <>
       <SummaryCard eyebrow={`Last ${data.windowDays} days · ${data.overview.registeredBeaches} beaches`} value={data.overview.reports} description="counted reports received">
-        <SummaryStats items={[{ label: 'Cleanups', value: data.overview.cleanups }, { label: 'Joined', value: data.overview.joined }, { label: 'Need help', value: data.overview.needHelp }]} />
+        <SummaryStats items={[{ label: 'Cleanups', value: data.overview.cleanups }, { label: 'Joined Participants', value: data.overview.joined }, { label: 'Need help', value: data.overview.needHelp }]} />
       </SummaryCard>
       <p className="eyebrow" style={{ margin: '2px 0 -4px' }}>Beach updates</p>
       {changed.length ? changed.slice(0, 8).map(beach => <WhiteCard key={beach.id} className="update-card">
@@ -240,7 +245,7 @@ function LiveInsightsScreen({ personalAction }: { personalAction: ReactNode }) {
         <ActionTile title="Trends" subtitle="Attention changes" icon={<BarChart size={19} />} onClick={() => nav('/insights/trends')} />
         <ActionTile title="Cleanup" subtitle="Results" icon={<Check color={C.navy} />} onClick={() => nav('/insights/cleanup')} />
         <ActionTile title="Participation" subtitle="Who joined" icon={<CommunityIcon size={19} />} onClick={() => nav('/insights/participation')} />
-        <ActionTile title="Wildlife" subtitle="Reference context" icon={<SpeciesIcon glyph="grass" size={20} />} onClick={() => nav('/insights/wildlife')} />
+        <ActionTile title="Marine Life" subtitle="Reference context" icon={<SpeciesIcon glyph="grass" size={20} />} onClick={() => nav('/insights/wildlife')} />
         <ActionTile title="Volunteers" subtitle="Beaches needing help" icon={<CommunityIcon size={19} />} onClick={() => nav('/community/needs-volunteers')} />
       </div>
     </>;
@@ -306,7 +311,7 @@ function LiveInsightsScreen({ personalAction }: { personalAction: ReactNode }) {
         <option value="all">All {data.overview.registeredBeaches} Beaches</option>{data.beaches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
       </select>
       <SummaryCard eyebrow="Participation records · last 90 days">
-        {['Joined', 'Recorded attendance', 'At a recorded cleanup'].map((label, index) => <div className="metric-bar" key={label}>
+        {['Joined Participants', 'Recorded attendance', 'At a recorded cleanup'].map((label, index) => <div className="metric-bar" key={label}>
             <div><span>{label}</span><strong style={{ color: C.lime }}>{displayValues[index]}</strong></div>
           <div className="metric-track" style={{ background: '#ffffff1a' }}><i style={{ background: C.lime, width: typeof values[index] === 'number' ? values[index] / max * 100 + '%' : '0%' }} /></div>
         </div>)}
@@ -398,7 +403,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
     trends: beachId ? "Beach Trend" : "Beach Trends",
     cleanup: beachId ? "Cleanup History" : "Cleanup Results",
     participation: "Participation",
-    wildlife: "Wildlife Nearby",
+    wildlife: "Marine Life Nearby",
   };
   const active =
     topic === "participation"
@@ -473,7 +478,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
           <SummaryStats
             items={[
               { label: "Cleanups", value: preview.cleanups },
-              { label: "Joined", value: preview.joined },
+              { label: "Joined Participants", value: preview.joined },
               { label: "Need help", value: preview.needHelp },
             ]}
           />
@@ -538,7 +543,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
             onClick={() => nav("/insights/participation")}
           />
           <ActionTile
-            title="Wildlife"
+            title="Marine Life"
             subtitle="Species nearby"
             icon={<SpeciesIcon glyph="grass" size={20} />}
             onClick={() => nav("/insights/wildlife")}
@@ -753,7 +758,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
           ))}
         </div>
         <SummaryCard eyebrow="Joining to cleanup · last 90 days">
-          {["Joined", "Recorded attendance", "At a recorded cleanup"].map(
+          {["Joined Participants", "Recorded attendance", "At a recorded cleanup"].map(
             (name, i) => (
               <div className="metric-bar" key={name}>
                 <div>
@@ -877,16 +882,12 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
   else
     body = (
       <>
-        <SummaryCard
-          eyebrow="Design preview · OBIS modelled"
-          value={2}
-          description="species and 3 habitats across the 4 pilot beaches"
-        />
-        {preview.wildlife.map(item => <button className="wildlife-beach-card" key={item.beachId} onClick={() => nav("/beach/" + item.beachId)}>
-          <span><strong>{preview.beaches.find(b => b.id === item.beachId)!.name}</strong><small>{item.habitat}</small></span>
-          <span className="wildlife-species">{item.species.map(name => <span key={name}>{name}</span>)}</span>
+        <MarineCoverageSummary total={preview.beaches.length} published={preview.beaches.filter(beach => beachMarineCards(beach.id).length > 0).length} modelled={0} available />
+        {preview.beaches.map(beach => <button className="wildlife-beach-card" key={beach.id} onClick={() => nav("/beach/" + beach.id)}>
+          <span><strong>{beach.name}</strong><small>Published coastal references</small></span>
+          <span className="wildlife-species">{beachMarineCards(beach.id).map(card => <span key={card.id} className={card.image ? 'has-photo' : undefined}>{card.image && <img src={card.image} alt="" loading="lazy" />}{card.name}</span>)}</span>
         </button>)}
-        <p className="coastal-footnote">Design preview · OBIS snapshot 09-2026. These are not confirmed sightings.</p>
+        <p className="demo-label">Preview · four pilot beaches. Live model results are not loaded.</p>
       </>
     );
   return (
@@ -894,11 +895,11 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
       key={`${topic}:${beachId ?? ''}`}
       title={
         titles[topic] ??
-        (topic === "cleanup-history" ? "Cleanup History" : "Insights")
+        (topic === "cleanup-history" ? "Cleanup History" : "Beach Insights")
       }
       className={!topic ? "insights-hub" : ""}
       eyebrow={
-        topic === "wildlife" ? "OBIS · snapshot 09-2026" : USE_MOCK
+        topic === "wildlife" ? "Preview · four pilot beaches" : USE_MOCK
           ? (topic ? "Insights · as of " : "4 pilot beaches · as of ") +
             preview.asOf
           : undefined
@@ -908,7 +909,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
         {!topic && personalAction}
         {topic === "wildlife" ? <button onClick={() => nav("/marine-life")}>Marine Life</button> : about}
       </div>}
-      subtitle={topic === "wildlife" ? "Modelled species and habitats, not sightings." : undefined}
+      subtitle={topic === "wildlife" ? "Published coastal context, not confirmed sightings." : undefined}
     >
       {topic && topic !== "wildlife" && chips}
       {body}

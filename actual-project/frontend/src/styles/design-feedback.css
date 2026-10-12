@@ -149,3 +149,50 @@
 @media (max-height: 620px) {
   .coastal-map.has-selection .map-search-form { display: none; }
 }
+
+/* Shared action typography; data labels and icon-only controls keep their scale. */
+.btn-primary, .btn-ghost, .map-pill, .coastal-map .map-pill,
+.map-overlay-toggle button, .filter-chips button, .coastal-segments button,
+.personal-insights-button, .beach-rating-links button, .section-heading button,
+.coastal-header > button, .wildlife-evidence-link, .marine-map-link {
+  font-family: inherit;
+  font-size: 14px !important;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.map-attention-legend { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px 12px; padding: 8px 12px; background: #ffffffed; border-top: 1px solid #dae4e9; }
+.map-attention-legend span { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: #4d606c; white-space: nowrap; }
+.map-attention-legend i { width: 7px; height: 7px; flex: none; border-radius: 50%; }
+.map-legend-entry { display: flex; justify-content: flex-end; padding: 6px 16px 0; }
+.map-legend-entry .map-pill { min-height: 36px; }
+.beach-map-label.has-species-preview { height: 76px; flex-direction: column; gap: 2px; }
+.beach-map-label > .map-label-species { display: inline-flex; flex: none; width: auto; min-height: 28px; padding: 2px 5px 2px 2px; gap: 4px; background: #fff; border: 0; border-radius: 16px; color: #245441; box-shadow: 0 1px 4px #173e5420; }
+.map-label-species img { width: 25px; height: 25px; object-fit: cover; border-radius: 50%; }
+.beach-map-label .map-label-species small { font-size: 10px; line-height: 1.1; font-weight: 650; text-transform: none; letter-spacing: 0; }
+.beach-marine-carousel { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 3px 1px 12px; margin-top: 16px; scrollbar-width: thin; scrollbar-color: #afbec6 transparent; }
+.beach-marine-carousel > .wildlife-photo-card { flex: 0 0 200px; min-width: 0; border: 1px solid var(--coastal-line); border-radius: 16px; background: white; overflow: hidden; scroll-snap-align: start; }
+.beach-marine-carousel .wildlife-photo-card > button > img,
+.beach-marine-carousel .species-placeholder { height: 155px; width: 100%; object-fit: cover; }
+.beach-marine-carousel:focus-visible { outline: 2px solid var(--coastal-navy); outline-offset: 4px; border-radius: 16px; }
+.beach-report-meta { align-self: stretch; align-content: center; justify-items: end; margin-left: auto; text-align: right; }
+.beach-band-header { flex-wrap: nowrap; align-items: center; gap: 12px; }
+.beach-report-meta small { background: none; padding: 0; line-height: 1.5; }
+.wildlife-evidence-help { width: 44px; height: 44px; min-width: 44px; min-height: 44px; flex-basis: 44px; border-radius: 50%; }
+.beach-composition > .section-heading { margin-bottom: 16px; }
+.recurrence-inline { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--coastal-line); }
+.recurrence-inline h3 { margin: 8px 0; }
+.marine-coverage-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.marine-coverage-stats > div { padding: 12px 10px; border-radius: 13px; background: #ffffff12; }
+.marine-coverage-stats strong { display: block; color: #b8ff36; font-size: 27px; line-height: 1.2; }
+.marine-coverage-stats small { display: block; color: white; font-size: 12px; font-weight: 500; margin-top: 5px; }
+.marine-coverage-stats span { display: block; font-size: 12px; line-height: 1.45; margin-top: 10px; color: #e5ebf1; }
+.personal-cleanup-fact.is-same-day strong { font-size: 24px; line-height: 1.2; }
+.personal-source button { min-height: 32px; color: #325e91; text-decoration: underline; }
+.personal-empty-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; text-align: left; }
+.insights-hub .coastal-header { flex-wrap: wrap; }
+@media (max-width: 360px) {
+  .beach-report-meta { text-align: right; }
+  .marine-coverage-stats { gap: 6px; }
+  .marine-coverage-stats > div { padding: 10px 7px; }
+  .map-attention-legend { gap: 5px 10px; }
+}

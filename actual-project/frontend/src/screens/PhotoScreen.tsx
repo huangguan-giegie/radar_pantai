@@ -208,10 +208,10 @@ export default function PhotoScreen() {
             <div>Existing photo unavailable. You can keep this report or choose a replacement photo.</div>
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
               <button type="button" onClick={() => nav('/report/details')} style={{ color: C.navy, fontWeight: 700, fontSize: 12 }}>
-                Keep existing record
+                Keep Existing Record
               </button>
               <button type="button" onClick={() => libraryRef.current?.click()} style={{ color: C.navy, fontWeight: 700, fontSize: 12 }}>
-                Choose replacement photo
+                Choose Replacement Photo
               </button>
             </div>
           </div>

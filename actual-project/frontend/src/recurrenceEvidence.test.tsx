@@ -13,18 +13,20 @@ describe('recurrence evidence', () => {
     const html = renderToStaticMarkup(<RecurrenceEvidence evidence={base} />);
     expect(html).toContain('No follow-up report yet');
     expect(html).toContain('4 days since the recorded cleanup');
-    expect(html).toContain('does not mean the beach is clean');
+    expect(html).toContain('Recurrence is shown after a follow-up report is recorded.');
     expect(html).not.toContain('Provisional estimate');
   });
-  it('preserves same-day zero intervals and labels only sufficiently evidenced medians', () => {
+  it('preserves same-day zero intervals without replacing them with a provisional median', () => {
     const html = renderToStaticMarkup(<RecurrenceEvidence evidence={{ ...base, intervalDays: 0, status: '0 days until next Counted report', medianDays: 2, provisional: true }} />);
     expect(html).toContain('Next Counted report on the same day');
     expect(html).not.toContain('0 days until next Counted report');
-    expect(html).toContain('Provisional estimate: the next Counted beach report typically follows 2 days after a cleanup.');
+    expect(html).toContain('not measured litter return');
+    expect(html).not.toContain('Provisional estimate');
     const insufficient = renderToStaticMarkup(<RecurrenceEvidence evidence={{ ...base, medianDays: 0, provisional: false }} />);
     expect(insufficient).not.toContain('Provisional estimate');
     const sameDay = renderToStaticMarkup(<RecurrenceEvidence evidence={{ ...base, medianDays: 0, provisional: true }} />);
-    expect(sameDay).toContain('typically follows on the same day as a cleanup');
+    expect(sameDay).toContain('Recurrence is shown after a follow-up report is recorded.');
+    expect(sameDay).not.toContain('same day as a cleanup');
     const oneDay = renderToStaticMarkup(<RecurrenceEvidence evidence={{ ...base, intervalDays: 1, status: '1 days until next Counted report' }} />);
     expect(oneDay).toContain('1 day until next Counted report');
   });

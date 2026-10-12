@@ -109,7 +109,7 @@ describe('species model cards', () => {
     expect(outside).not.toContain('No species recommendations');
     const empty = renderToStaticMarkup(<SpeciesModelCards result={result([])} loading={false} error={null} {...actions} />);
     expect(empty).toContain('No species recommendations');
-    expect(empty).toContain('not evidence that wildlife is absent');
+    expect(empty).toContain('not evidence that marine life is absent');
     expect(empty).not.toContain('Retry');
   });
 

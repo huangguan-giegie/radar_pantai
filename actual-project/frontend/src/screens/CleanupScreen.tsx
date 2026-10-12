@@ -317,7 +317,7 @@ export default function CleanupScreen() {
         tabs={false}
       >
         <button disabled={busy} onClick={() => setStep("linked")} style={{ color: C.navy }}>
-          ← Back to linked report
+          ← Back to Linked Report
         </button>
         {photoInput}
         <p className="subtle">
@@ -400,7 +400,7 @@ export default function CleanupScreen() {
         tabs={false}
       >
         <button disabled={busy} onClick={() => setStep("amount")}>
-          ← Choose remaining amount
+          ← Choose Remaining Amount
         </button>
         {photoInput}
         {photoUrl && (

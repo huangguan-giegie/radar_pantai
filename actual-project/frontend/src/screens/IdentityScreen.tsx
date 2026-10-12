@@ -322,7 +322,7 @@ export default function IdentityScreen() {
                   fontWeight: mode === 'existing' ? 650 : 600,
                 }}
               >
-                Restore profile
+                Restore Profile
               </button>
             </div>
 

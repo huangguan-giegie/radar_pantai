@@ -111,7 +111,7 @@ export function PrivacySheet({ onClose }: { onClose: () => void }) {
           GPS is used for the check, then discarded. Others see only the beach.
         </div>
         <GhostButton onClick={onClose} height={52} style={{ marginTop: 14, borderRadius: 16, fontSize: 14.5, fontWeight: 640 }}>
-          Got it
+          Understood
         </GhostButton>
       </div>
     </div>

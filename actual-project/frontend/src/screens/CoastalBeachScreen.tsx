@@ -153,7 +153,7 @@ export default function CoastalBeachScreen() {
   const currentSpecies = hasWildlifeContext ? wildlife.species : [];
   const marineCards = beachMarineCards(beachId, currentSpecies);
   const wildlifeEvidenceNote = hasWildlifeContext && wildlife?.sourceStatus === "modelled"
-    ? `Nearby OBIS-derived marine-grid suggestions${wildlife.coordinateContext ? ` · ${wildlife.coordinateContext.distanceKm.toFixed(1)} km to reference cell` : ""} · Not confirmed beach sightings or occurrence probabilities`
+    ? "Species are suggested from OBIS marine-grid data around a nearby coastal reference. They provide context, not confirmed sightings at this beach."
     : hasWildlifeContext && wildlife?.sourceStatus === "published_reference"
       ? "Published coastal reference · not confirmed beach sightings"
       : "Published coastal references from the map, not confirmed sightings at this beach";
@@ -190,7 +190,7 @@ export default function CoastalBeachScreen() {
           <div className="beach-band-header">
             <p className="eyebrow">Litter Severity</p>
             <div className="beach-report-meta">
-              <small>{b.validReports} active {b.validReports === 1 ? 'report' : 'reports'} · latest 90 days</small>
+              <small>{b.validReports} active {b.validReports === 1 ? 'report' : 'reports'}</small>
               <small>{detail?.lastReportedAt ? 'Last reported ' + formatDate(detail.lastReportedAt) : (fixture?.reported ?? 'No recent report')}</small>
             </div>
           </div>
@@ -222,10 +222,10 @@ export default function CoastalBeachScreen() {
           )}
           <div className="beach-rating-links">
           <button onClick={() => nav("/method")}>
-            How it’s rated →
+            How It’s Rated →
           </button>
           <button onClick={() => nav('/insights/trends/' + beachId)}>
-            See changes over time →
+            See Changes Over Time →
           </button>
           </div>
         </WhiteCard>
@@ -237,7 +237,6 @@ export default function CoastalBeachScreen() {
             Nearby Marine Life
           </SectionHeading>
 
-          <p className="beach-wildlife-location">Coastal context for {b.name}</p>
           <p className="subtle">
             {hasDocumentedHabitat
               ? `Habitat · ${detail?.habitat ?? fixture?.habitat}`
@@ -245,12 +244,12 @@ export default function CoastalBeachScreen() {
           </p>
           {wildlifeLoading && !USE_MOCK && <p className="coastal-footnote" role="status">Loading available marine-life context…</p>}
           {wildlifeError && !USE_MOCK && (
-            <DataUnavailable title="Wildlife context temporarily unavailable" retry={() => { void refreshWildlife(); }}>
+            <DataUnavailable title="Marine life context temporarily unavailable" retry={() => { void refreshWildlife(); }}>
               Please retry to load the marine-life information for this beach.
             </DataUnavailable>
           )}
           {marineCards.length > 0 && (
-            <div className="coastal-grid-two" style={{ marginTop: 16 }}>
+            <div className="beach-marine-carousel" tabIndex={0} role="region" aria-label="Marine life photos, scroll to explore">
               {marineCards.map(item => (
                   <div className="wildlife-photo-card" key={item.id}>
                     <button onClick={() => nav(item.destination)}>
@@ -278,8 +277,8 @@ export default function CoastalBeachScreen() {
             <button
               type="button"
               className="wildlife-evidence-help"
-              aria-label="About wildlife evidence"
-              title="About wildlife evidence"
+              aria-label="About Marine Life Evidence"
+              title="About Marine Life Evidence"
               aria-haspopup="dialog"
               onClick={() => setShowWildlifeEvidenceInfo(true)}
             >
@@ -290,7 +289,7 @@ export default function CoastalBeachScreen() {
               className="wildlife-evidence-link"
               onClick={() => nav(hasWildlifeContext ? "/insights/wildlife" : "/marine-area/" + region + "?beach=" + beachId)}
             >
-              {hasWildlifeContext ? "Wildlife sources ↗" : "Sources ↗"}
+              {hasWildlifeContext ? "Marine Life Sources ↗" : "Sources ↗"}
             </button>
           </div>
         </section>
@@ -348,7 +347,7 @@ export default function CoastalBeachScreen() {
             <div className="dashed-empty">No public report photos yet.</div>
           )}
         </section>
-        <section>
+        <section className="beach-composition">
           <SectionHeading>Litter Composition</SectionHeading>
           {detail?.composition?.length ? (
             <WhiteCard>
@@ -382,8 +381,8 @@ export default function CoastalBeachScreen() {
           <WhiteCard>
             <p className="eyebrow">Latest Recorded Cleanup</p>
             <h2>{formatDate(cleanup.createdAt)}</h2>
-            {detail?.recurrence ? <RecurrenceEvidence evidence={detail.recurrence} /> : (
-              <p className="subtle">Cleanup recorded - awaiting follow-up.</p>
+            {detail?.recurrence ? <RecurrenceEvidence evidence={detail.recurrence} embedded /> : (
+              <p className="subtle">Recurrence is shown after a follow-up report is recorded.</p>
             )}
             <button
               style={{ marginTop: 14 }}
@@ -397,15 +396,8 @@ export default function CoastalBeachScreen() {
         {USE_MOCK && <p className="demo-label">Preview · example data</p>}
       </div>
       {showWildlifeEvidenceInfo && (
-        <Sheet title="About wildlife evidence" onClose={() => setShowWildlifeEvidenceInfo(false)}>
+        <Sheet title="About Marine Life Evidence" onClose={() => setShowWildlifeEvidenceInfo(false)}>
           <p className="subtle" style={{ lineHeight: 1.65 }}>{wildlifeEvidenceNote}</p>
-          <p className="coastal-footnote" style={{ fontSize: 12 }}>
-            {hasWildlifeContext && wildlife?.sourceStatus === "modelled"
-              ? "These historical marine-grid model suggestions describe a nearby reference location, not a survey of this beach. Neither the predictions nor their scores establish a local sighting or an occurrence probability."
-              : hasWildlifeContext && wildlife?.sourceStatus === "published_reference"
-                ? "Published coastal references give ecological context. They do not establish that the species was observed at this beach."
-                : "Regional examples or missing records are not evidence that wildlife is present or absent at this beach."}
-          </p>
           <GhostButton onClick={() => setShowWildlifeEvidenceInfo(false)}>Close</GhostButton>
         </Sheet>
       )}

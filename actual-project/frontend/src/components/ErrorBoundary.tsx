@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
               fontWeight: 650,
             }}
           >
-            Start again
+            Start Again
           </button>
         </div>
       </div>

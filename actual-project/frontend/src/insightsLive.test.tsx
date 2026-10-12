@@ -128,7 +128,7 @@ describe("live Insights acceptance display", () => {
   it("offers every required insight topic and keeps volunteers as a supplemental entry", () => {
     const markup = renderToStaticMarkup(<LiveInsightsScreen />);
     expect(markup.match(/class="action-tile press"/g)).toHaveLength(6);
-    for (const topic of ['Trends', 'Cleanup', 'Participation', 'Evidence', 'Wildlife', 'Volunteers']) {
+    for (const topic of ['Trends', 'Cleanup', 'Participation', 'Evidence', 'Marine Life', 'Volunteers']) {
       expect(state.actions.has(topic)).toBe(true);
     }
     state.actions.get('Evidence')?.();

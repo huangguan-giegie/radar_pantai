@@ -59,7 +59,8 @@ describe('teammate frontend v2 beach integration', () => {
     expect(appSource).toContain('<Route path="/beach/:beachId" element={<BeachScreen />}');
     const html = renderBeach();
     expect(html).toContain('Nearby Marine Life');
-    expect(html).toContain('Coastal context for Pantai Kelanang');
+    expect(html).not.toContain('Coastal context for Pantai Kelanang');
+    expect(html).toContain('beach-marine-carousel');
     expect(html.indexOf('Nearby Marine Life')).toBeLessThan(html.indexOf('What You Can Do Here'));
     expect(html.indexOf('Nearby Marine Life')).toBeLessThan(html.indexOf('Litter Gallery'));
     expect(html).toContain('Species Guide');
@@ -76,7 +77,7 @@ describe('teammate frontend v2 beach integration', () => {
   it('keeps the trend destination without the removed technical comparison block', () => {
     const html = renderBeach();
     expect(html).not.toContain('30-day Band Change');
-    expect(html).toContain('See changes over time');
+    expect(html).toContain('See Changes Over Time');
     expect(html).toContain('Insufficient Data');
     expect(html).not.toContain('At least 3 active reports are needed in both 90-day windows');
   });
@@ -84,9 +85,9 @@ describe('teammate frontend v2 beach integration', () => {
   it('keeps the wildlife explanation behind a help button and insets the sources link on phones', () => {
     const html = renderBeach();
     expect(html).toContain('wildlife-evidence-actions');
-    expect(html).toContain('aria-label="About wildlife evidence"');
+    expect(html).toContain('aria-label="About Marine Life Evidence"');
     expect(html).toContain('aria-haspopup="dialog"');
-    expect(html).toContain('Wildlife sources ↗');
+    expect(html).toContain('Marine Life Sources ↗');
     expect(html).not.toContain('Published coastal reference · not confirmed beach sightings');
   });
 
