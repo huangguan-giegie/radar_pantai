@@ -355,7 +355,7 @@ function LiveInsightsScreen({ personalAction }: { personalAction: ReactNode }) {
   } else {
     body = <WildlifeCoverage beaches={data.wildlife} />;
   }
-  return <CoastalPage title={title} className={!topic ? 'insights-hub' : ''} eyebrow={data ? `Saved records · as of ${formatDate(data.asOf)}` : 'Insights'}
+  return <CoastalPage key={`${topic}:${beachId ?? ''}`} title={title} className={!topic ? 'insights-hub' : ''} eyebrow={data ? `Saved records · as of ${formatDate(data.asOf)}` : 'Insights'}
     back={beachId ? '/beach/' + beachId : topic ? '/insights' : undefined}
     action={<div className="insights-header-actions">
       {!topic && personalAction}
@@ -891,6 +891,7 @@ function PreviewInsightsScreen({ personalAction }: { personalAction: ReactNode }
     );
   return (
     <CoastalPage
+      key={`${topic}:${beachId ?? ''}`}
       title={
         titles[topic] ??
         (topic === "cleanup-history" ? "Cleanup History" : "Insights")

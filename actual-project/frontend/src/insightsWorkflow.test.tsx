@@ -1,4 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
+import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -44,6 +45,29 @@ beforeEach(() => {
 });
 
 describe('production Insights scope and count labels', () => {
+  it('remounts the internal scroll container when Insights navigates to Wildlife', () => {
+    let view!: ReactTestRenderer;
+    act(() => {
+      view = create(<MemoryRouter initialEntries={['/insights']}><Routes>
+        <Route path="/insights/:topic?" element={<InsightsScreen />} />
+      </Routes></MemoryRouter>);
+    });
+    try {
+      const previousScrollContainer = view.root.findByType('main');
+      const wildlifeTile = view.root.findAllByProps({ className: 'action-tile press' }).find(
+        tile => tile.findAllByType('strong').some(text => text.children.join('') === 'Wildlife'),
+      );
+      expect(wildlifeTile).toBeDefined();
+      act(() => { wildlifeTile!.props.onClick(); });
+      const wildlifeScrollContainer = view.root.findByType('main');
+      expect(wildlifeScrollContainer).not.toBe(previousScrollContainer);
+      expect(wildlifeScrollContainer.props.className).toContain('scroll-y');
+      expect(view.root.findByType('h1').children.join('')).toBe('Wildlife Nearby');
+    } finally {
+      act(() => { view.unmount(); });
+    }
+  });
+
   it('requests cleanup aggregates and records for the selected beach', () => {
     render('/insights/cleanup?beach=morib');
     expect(state.api).toHaveBeenCalledWith('/insights?beachId=morib');
