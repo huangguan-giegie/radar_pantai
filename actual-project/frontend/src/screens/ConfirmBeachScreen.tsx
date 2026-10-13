@@ -234,6 +234,8 @@ export default function ConfirmBeachScreen() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
+                      flexShrink: 0, // Scrollable flex columns must not squash multi-line beach rows.
+                      minHeight: 58,
                       gap: 11,
                       padding: '12px 13px',
                       borderRadius: 16,
@@ -241,12 +243,12 @@ export default function ConfirmBeachScreen() {
                       width: '100%',
                     }}
                   >
-                    <div style={{ width: 34, height: 34, borderRadius: 12, background: 'rgba(11,33,97,.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 34, height: 34, flexShrink: 0, borderRadius: 12, background: 'rgba(11,33,97,.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Pin size={14} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14.5, fontWeight: 640 }}>{b.name}</div>
-                      <div style={{ fontSize: 11.5, color: C.dim, marginTop: 3 }}>{b.area}</div>
+                      <div style={{ fontSize: 14.5, fontWeight: 640, lineHeight: 1.35, overflowWrap: 'anywhere' }}>{b.name}</div>
+                      <div style={{ fontSize: 11.5, color: C.dim, marginTop: 3, lineHeight: 1.4, overflowWrap: 'anywhere' }}>{b.area}</div>
                     </div>
                     <SeverityBadge
                       band={attentionStateFor(b.severity, b.insufficientData, b.validReports).hasBand ? b.severity : null}
