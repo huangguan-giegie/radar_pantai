@@ -43,10 +43,10 @@ export function SpeciesQuestions({ species }: { species: SpeciesGuide }) {
         <button className="species-question-submit" type="submit" disabled={!question.trim() || reply?.loading}>Ask AI →</button>
       </form>
     </SummaryCard>
-    {reply && <Sheet title={reply.question} onClose={close}>
+    {reply && <Sheet title={reply.question} onClose={close} className="species-qa-sheet">
       <p className="coastal-footnote">{reply.custom ? "AI-generated · species knowledge" : "From this guide’s published sources"}</p>
       <div aria-live="polite" role={reply.error ? "alert" : "status"}>
-        {reply.loading ? <p>Preparing your answer…</p> : <p className="subtle" style={{ whiteSpace: "pre-wrap" }}>{reply.text}</p>}
+        {reply.loading ? <p>Preparing your answer…</p> : <p className="species-qa-answer" style={{ whiteSpace: "pre-wrap" }}>{reply.text}</p>}
       </div>
       {reply.error && <PrimaryButton onClick={() => void ask(reply.question)}>Try again</PrimaryButton>}
       {reply.custom && !reply.loading && !reply.error && <p className="coastal-footnote">Species guide references</p>}

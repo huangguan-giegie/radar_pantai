@@ -16,7 +16,7 @@ export function mapMarineCards(beachId: string, wildlife: readonly BeachWildlife
 }
 
 export function marineLayerEnabled(params: URLSearchParams) {
-  return params.get('marine') === 'on' || (params.get('marine') !== 'off' && params.get('layer') === 'bio');
+  return params.get('marine') !== 'off' && params.get('layer') !== 'litter';
 }
 
 export function marineLayerParams(previous: URLSearchParams, enabled: boolean) {

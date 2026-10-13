@@ -16,7 +16,7 @@
 .map-search-form .coastal-search { margin: 0; min-height: 43px; border: 1px solid #dae4e9; border-radius: 13px; background: white; }
 .map-search-form .coastal-search:focus-within { border-color: #397568; box-shadow: 0 0 0 3px #39756816; }
 .map-search-form input { width: 100%; min-width: 0; font-size: 13px; }
-.map-overlay-toggle { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.map-overlay-toggle { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
 .design-map-header > .map-overlay-toggle { margin-top: 0; }
 .map-overlay-toggle button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 9px; border: 1px solid #d5e1e3; border-radius: 12px; background: white; font-size: 12px; font-weight: 650; min-height: 38px; color: #334f60; transition: background .16s, border-color .16s; }
 .map-overlay-toggle button[aria-pressed=true] { background: #e8f3ee; border-color: #b7d8cb; color: #215b4b; }
