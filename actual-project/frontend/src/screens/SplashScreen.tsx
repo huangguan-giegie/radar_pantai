@@ -8,11 +8,11 @@ export default function SplashScreen() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       navigate('/welcome', { replace: true });
     }, 500);
 
-    return () => window.clearTimeout(timeoutId);
+    return () => clearTimeout(timeoutId);
   }, [navigate]);
 
   return (
