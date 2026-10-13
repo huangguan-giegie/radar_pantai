@@ -1,10 +1,19 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/splash.css';
 
-// A real entry page, independent of how quickly the JavaScript loads. The
-// visitor can continue immediately; direct links keep their own destination.
+// Show the brand splash briefly, then continue to the original welcome route.
+// Using replace prevents Back from reopening the splash after the redirect.
 export default function SplashScreen() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      navigate('/welcome', { replace: true });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [navigate]);
 
   return (
     <main className="screen splash-screen" aria-labelledby="splash-title">
@@ -23,13 +32,6 @@ export default function SplashScreen() {
         <p className="splash-tagline">
           REPORT LITTER. SUPPORT CLEANUPS. PROTECT MARINE LIFE.
         </p>
-        <button
-          type="button"
-          className="splash-continue"
-          onClick={() => navigate('/welcome', { replace: true })}
-        >
-          Get Started <span aria-hidden="true">→</span>
-        </button>
       </div>
       <footer className="splash-footer">
         COMMUNITY BEACH LITTER REPORTING &amp; CLEANUP SUPPORT FOR MALAYSIA © 2026

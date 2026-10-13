@@ -93,25 +93,6 @@
   text-wrap: balance;
 }
 
-.splash-continue {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  min-height: 48px;
-  margin-top: 32px;
-  padding: 12px 26px;
-  border: 1px solid rgba(232, 238, 245, .4);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .06);
-  color: #f7f8fa;
-  font-size: 14px;
-  font-weight: 650;
-  text-align: center;
-}
-.splash-continue:hover { background: rgba(255, 255, 255, .13); }
-.splash-continue:focus-visible { outline: 3px solid #b8ff36; outline-offset: 5px; }
-.splash-continue:active { background: rgba(255, 255, 255, .2); }
 
 .splash-footer {
   max-width: 350px;
