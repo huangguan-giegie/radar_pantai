@@ -1,4 +1,4 @@
-"""Beach list/detail snapshot parity and report/cleanup refresh inputs."""
+"""Beach list/detail snapshot parity and historical-band compatibility."""
 from __future__ import annotations
 
 import sys
@@ -20,11 +20,11 @@ def test_snapshot_matches_empty_live_beach_contract(api):
     live = client.get("/beaches/morib").get_json()
     assert len(built["beaches"]) == len(client.get("/beaches").get_json())
     assert built["details"]["morib"] == live
-    assert built["details"]["morib"]["composition"] is None
+    assert built["details"]["morib"]["recentReportBands"] == []
     assert "does-not-exist" not in built["details"]
 
 
-def test_snapshot_reflects_new_counted_reports_and_composition(api):
+def test_snapshot_preserves_active_composition_and_historical_bands(api):
     application, client = api
     user = signup(client)[0]["user"]["id"]
     now = datetime.now(timezone.utc)
@@ -38,9 +38,11 @@ def test_snapshot_reflects_new_counted_reports_and_composition(api):
             photo_stripped=True, status="Counted", created_at=now, updated_at=now,
             **impl.quantity_values({"Plastic": "Large"}),
         ))
-    built = build_beach_snapshots(engine, impl, now=now)
+    built = build_beach_snapshots(engine, impl)
     detail = built["details"]["morib"]
+    assert detail == client.get("/beaches/morib").get_json()
     assert detail["validReports"] == 1
-    assert detail["composition"] == [{"category": "Plastic", "percentage": 100}]
-    assert detail["compositionSource"]["reportId"] == "snapshot-counted-report"
+    assert detail["composition"] == [{"category": "Plastic", "percentage": 100, "band": "Large"}]
+    assert detail["compositionSource"]["method"] == "active_report_estimate"
+    assert detail["recentReportBands"][0]["reportId"] == "snapshot-counted-report"
     assert next(b for b in built["beaches"] if b["id"] == "morib")["validReports"] == 1

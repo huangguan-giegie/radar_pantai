@@ -1,68 +1,143 @@
 """Prewarmed public beach snapshots with the same lifecycle as Insights.
 
-Build list and 179 detail payloads in a handful of batch queries. Read requests
-only serialize in-memory data; expired snapshots are served while one background
-refresh runs. A successful mutation invalidates the timestamp, matching the
-Insights stale-while-revalidate contract.
+All list/individual beach payloads are built with bulk report and cleanup reads.
+The detailed view preserves the active-band composition and recent-report archive
+installed by standalone_cleanup, rather than the older app_core fields.
 """
 from __future__ import annotations
 
 import os
 import threading
 import time
-from datetime import datetime, timezone
+from collections import defaultdict
+from datetime import datetime, timedelta, timezone
+from statistics import median
 from typing import Any
 
 from flask import jsonify, request
 from sqlalchemy import select
 
+from standalone_cleanup import _active_quantities, _current_band_state
+
+
+def _composition(impl: Any, active_rows: list[tuple[Any, dict[str, str]]]) -> list[dict[str, Any]]:
+    """Match the reviewed active-composition algorithm, including each category's band."""
+    aggregate = {
+        category: impl.CATEGORY_WEIGHTS[category] * sum(
+            impl.QUANTITY_WEIGHTS[quantities[category]]
+            for _report, quantities in active_rows if category in quantities
+        )
+        for category in impl.FRONTEND_CATEGORIES
+    }
+    weighted = [(category, aggregate[category])
+                for category in impl.FRONTEND_CATEGORIES if aggregate[category] > 0]
+    total = sum(value for _category, value in weighted)
+    if not total:
+        return []
+    exact = [(category, value * 100 / total) for category, value in weighted]
+    whole = {category: impl.math.floor(value) for category, value in exact}
+    remaining = 100 - sum(whole.values())
+    for category, _ in sorted(
+        exact, key=lambda item: item[1] - impl.math.floor(item[1]), reverse=True
+    )[:remaining]:
+        whole[category] += 1
+    by_level = {weight: band for band, weight in impl.QUANTITY_WEIGHTS.items()}
+    return [{
+        "category": category, "percentage": whole[category],
+        "band": by_level[max(
+            impl.QUANTITY_WEIGHTS[quantities[category]]
+            for _report, quantities in active_rows if category in quantities
+        )],
+    } for category, _ in weighted]
+
 
 def build_beach_snapshots(engine: Any, impl: Any, now: datetime | None = None) -> dict[str, Any]:
     current = now or datetime.now(timezone.utc)
     beaches = impl.load_beaches(engine)
+    # Use the same batch function as the live /beaches list endpoint.
     summaries = impl.beach_summaries_batch(engine, beaches, now=current)
-    # The original detail endpoint uses the latest Counted report for the
-    # composition chart, independently of the active 90-day attention window.
+    cutoff = current - timedelta(days=90)
     with engine.connect() as connection:
         reports = connection.execute(
             select(impl.reports_table)
             .where(impl.reports_table.c.status == "Counted")
-            .order_by(impl.reports_table.c.created_at.desc())
         ).all()
-        latest: dict[str, Any] = {}
-        for row in reports:
-            latest.setdefault(row.beach_id, row)
-        count_backed_ids = [row.id for row in latest.values()
-                            if getattr(row, "item_counts", None)]
+        ids = [row.id for row in reports]
         actions = (connection.execute(
             select(impl.cleanup_actions_table)
-            .where(impl.cleanup_actions_table.c.target_report_id.in_(count_backed_ids))
-        ).all() if count_backed_ids else [])
+            .where(impl.cleanup_actions_table.c.target_report_id.in_(ids))
+            .order_by(impl.cleanup_actions_table.c.created_at)
+        ).all() if ids else [])
 
-    by_report: dict[str, list[Any]] = {}
+    actions_by_report: dict[str, list[Any]] = defaultdict(list)
+    reports_by_beach: dict[str, list[Any]] = defaultdict(list)
     for action in actions:
-        by_report.setdefault(action.target_report_id, []).append(action)
+        actions_by_report[action.target_report_id].append(action)
+    for row in reports:
+        reports_by_beach[row.beach_id].append(row)
 
     details: dict[str, dict[str, Any]] = {}
     for beach, summary in zip(beaches, summaries):
-        detail = {**summary, "species": beach.get("species", []),
-                  "ecologicalNote": beach.get("ecologicalNote", "")}
-        report = latest.get(beach["id"])
-        if report is None:
-            detail.update({"composition": None, "compositionSource": None})
+        all_counted = [row for row in reports_by_beach[beach["id"]]
+                       if row.id not in impl.LEGACY_SEED_REPORT_IDS]
+        eligible = [row for row in all_counted
+                    if impl.utc_datetime(row.created_at) >= cutoff
+                    and getattr(row, "deleted_at", None) is None]
+        active_rows: list[tuple[Any, dict[str, str]]] = []
+        for row in eligible:
+            current_bands = _active_quantities(
+                _current_band_state(impl, row, actions_by_report[row.id]))
+            if current_bands:
+                active_rows.append((row, current_bands))
+
+        score = (float(median(impl.report_score_for(bands)
+                              for _row, bands in active_rows))
+                 if len(active_rows) >= 3 else None)
+        severity, band = impl.severity_from_score(score)
+        newest = max(all_counted, key=lambda r: impl.utc_datetime(r.created_at), default=None)
+        newest_active = max(
+            (impl.utc_datetime(row.created_at) for row, _ in active_rows), default=None)
+        age = current - newest_active if newest_active else None
+        detail = {
+            **summary,
+            "severity": severity, "band": band, "insufficientData": severity is None,
+            "validReports": len(active_rows),
+            "attentionScore": round(score, 2) if score is not None else None,
+            "eligibleReportCount": len(active_rows),
+            "lastReportedAt": impl.contract_timestamp(newest.created_at) if newest else None,
+            "newestCountedReportAt": impl.contract_timestamp(newest_active) if newest_active else None,
+            "latestContributingReportAt": impl.contract_timestamp(newest_active) if newest_active else None,
+            "freshnessKind": ("stale" if age is None else "ok" if age < timedelta(days=30)
+                              else "aging" if age <= timedelta(days=90) else "stale"),
+            "species": beach.get("species", []),
+            "ecologicalNote": beach.get("ecologicalNote", ""),
+        }
+        if active_rows:
+            detail["composition"] = _composition(impl, active_rows)
+            detail["compositionSource"] = {
+                "method": "active_report_estimate",
+                "activeReportCount": len(active_rows),
+                "windowDays": 90,
+            }
         else:
-            quantities = impl.quantities_from_row(report)
-            if getattr(report, "item_counts", None):
-                quantities = impl.quantity_bands_for_counts(
-                    impl.remaining_counts_for(report, by_report.get(report.id, [])))
-            detail.update({
-                "composition": impl.composition_percentages(quantities),
-                "compositionSource": {
-                    "reportId": report.id,
-                    "createdAt": impl.contract_timestamp(report.created_at),
-                    "method": "reported_quantity_estimate",
-                },
-            })
+            detail["composition"] = None
+            detail["compositionSource"] = None
+
+        # Up to four most recent non-deleted Counted reports, including those
+        # resolved by cleanup; their submitted bands are historical evidence.
+        newest_reports = sorted(
+            (r for r in reports_by_beach[beach["id"]]
+             if getattr(r, "deleted_at", None) is None),
+            key=lambda r: (impl.utc_datetime(r.created_at), r.id),
+            reverse=True,
+        )[:4]
+        detail["recentReportBands"] = [{
+            "reportId": row.id,
+            "reportedAt": impl.contract_timestamp(row.created_at),
+            "bands": bands,
+        } for row in newest_reports
+          if (bands := _active_quantities(impl.quantities_from_row(row)))]
+
         details[beach["id"]] = detail
     return {"beaches": summaries, "details": details}
 
@@ -75,7 +150,6 @@ def install_beach_snapshots(application: Any, engine: Any, impl: Any) -> None:
         ttl = max(5.0, float(os.getenv("INSIGHTS_CACHE_TTL_SECONDS", "60")))
     except ValueError:
         ttl = 60.0
-
     lock = threading.Lock()
     refresh_lock = threading.Lock()
     cached: tuple[float, dict[str, Any]] | None = None
@@ -88,19 +162,17 @@ def install_beach_snapshots(application: Any, engine: Any, impl: Any) -> None:
             if cached is not None:
                 cached = (0.0, cached[1])
 
-    def publish(built: dict[str, Any], started_generation: int) -> None:
+    def publish(built: dict[str, Any], started: int) -> None:
         nonlocal cached
         with lock:
-            # A write that occurs during construction must not be marked fresh.
-            stamp = time.monotonic() if started_generation == generation else 0.0
-            cached = (stamp, built)
+            cached = ((time.monotonic() if started == generation else 0.0), built)
 
     def refresh_sync() -> dict[str, Any]:
         with refresh_lock:
             with lock:
-                started_generation = generation
+                started = generation
             built = build_beach_snapshots(engine, impl)
-            publish(built, started_generation)
+            publish(built, started)
             return built
 
     def refresh_async() -> None:
@@ -110,10 +182,10 @@ def install_beach_snapshots(application: Any, engine: Any, impl: Any) -> None:
         def work() -> None:
             try:
                 with lock:
-                    started_generation = generation
+                    started = generation
                 built = build_beach_snapshots(engine, impl)
-                publish(built, started_generation)
-            except Exception:  # pragma: no cover - production-only refresh
+                publish(built, started)
+            except Exception:  # pragma: no cover - deployment-only refresh
                 application.logger.exception("Public beach snapshot refresh failed")
             finally:
                 refresh_lock.release()
