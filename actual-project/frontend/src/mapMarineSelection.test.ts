@@ -15,12 +15,13 @@ describe('shared map marine-life workflow', () => {
     expect(mapMarineCards('remis').some(card => card.kind === 'habitat')).toBe(false);
     expect(mapMarineCards('pantai-air-batang-tioman')).toEqual([]);
   });
-  it('starts with litter only, but supports explicit and existing biodiversity links', () => {
-    expect(marineLayerEnabled(new URLSearchParams())).toBe(false);
-    expect(marineLayerEnabled(new URLSearchParams('region=selangor'))).toBe(false);
+  it('starts with Marine Life enabled, while explicit off is respected', () => {
+    expect(marineLayerEnabled(new URLSearchParams())).toBe(true);
+    expect(marineLayerEnabled(new URLSearchParams('region=selangor'))).toBe(true);
     expect(marineLayerEnabled(new URLSearchParams('marine=on'))).toBe(true);
     expect(marineLayerEnabled(new URLSearchParams('layer=bio&beach=morib'))).toBe(true);
     expect(marineLayerEnabled(new URLSearchParams('layer=bio&marine=off'))).toBe(false);
+    expect(marineLayerEnabled(new URLSearchParams('layer=litter'))).toBe(false);
   });
 
   it('switches layers without losing the region or carrying an old expanded beach', () => {

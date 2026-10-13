@@ -413,7 +413,7 @@ export default function MapScreen() {
         <form className="map-search-form" role="search" onSubmit={event => { event.preventDefault(); setSheet('beaches'); }}>
           <label className="coastal-search"><Search /><input type="search" aria-label="Search all beaches" placeholder="Search beaches in all regions" value={search} onChange={event => setSearch(event.target.value)} /></label>
         </form>
-        <div className="map-overlay-toggle"><span className="map-base-layer"><i aria-hidden="true" />Litter always on</span><button aria-pressed={layer === 'bio'} onClick={() => setParams(previous => marineLayerParams(previous, layer !== 'bio'), { replace: true })}><SpeciesIcon glyph="turtle" size={18} />Marine Life <span className="map-layer-state">{layer === 'bio' ? 'On' : 'Off'}</span><span className="map-layer-switch" aria-hidden="true"><i /></span></button></div>
+        <div className="map-overlay-toggle"><button aria-pressed={layer === 'bio'} onClick={() => setParams(previous => marineLayerParams(previous, layer !== 'bio'), { replace: true })}><SpeciesIcon glyph="turtle" size={18} />Marine Life <span className="map-layer-state">{layer === 'bio' ? 'On' : 'Off'}</span><span className="map-layer-switch" aria-hidden="true"><i /></span></button></div>
       </header>
       {search.trim() && sheet !== 'beaches' && <section className="map-search-results" aria-label="Beach search results">
         {loading ? <p role="status">Loading beaches…</p> : error ? <DataUnavailable title="Could not load beaches" retry={() => void refresh()}>{error}</DataUnavailable> : <>
@@ -497,7 +497,7 @@ export default function MapScreen() {
             Numbers show counted reports in this view. The ring shows the
             highest available attention level in that region. Each beach name is a coloured button showing its own level.
           </p>
-          <p className="subtle">Marine life starts off. Turn it on, then tap a beach to expand its nearby species. Tap the centre for beach details or an outer icon for a species or habitat guide. Close the circle or tap empty map space to collapse it.</p>
+          <p className="subtle">Marine Life starts on. Tap a beach to expand its nearby species. Tap the centre for beach details or an outer icon for a species or habitat guide. Close the circle or tap empty map space to collapse it.</p>
           {Object.entries(COLORS).map(([label, color]) => (
             <div className="legend-row" key={label}>
               <i style={{ background: color }} />

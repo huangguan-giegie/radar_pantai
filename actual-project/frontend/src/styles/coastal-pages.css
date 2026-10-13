@@ -713,3 +713,17 @@
 .marine-record-body>span.marine-record-location{display:flex;flex-direction:column;gap:5px;font-size:14px;color:inherit}
 .marine-record-location small{font-size:12px;color:#667587}
 .marine-record-location+.marine-record-location{padding-top:10px;border-top:1px solid #e8ecf0}
+
+/* Only the species Q&A dialog shares this type scale. Reference labels, source
+   links, other sheets and every other page retain their existing typography. */
+.coastal-sheet.species-qa-sheet > header h2,
+.coastal-sheet.species-qa-sheet .species-qa-answer {
+  color: #172d50;
+  font-size: 20px;
+  line-height: 1.48;
+}
+.coastal-sheet.species-qa-sheet > header h2 { font-weight: 650; }
+.coastal-sheet.species-qa-sheet .species-qa-answer {
+  font-weight: 400;
+  margin: 0 0 16px;
+}

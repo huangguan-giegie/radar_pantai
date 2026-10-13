@@ -176,10 +176,12 @@ export function Sheet({
   title,
   children,
   onClose,
+  className = "",
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
@@ -223,7 +225,7 @@ export function Sheet({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="coastal-sheet"
+        className={`coastal-sheet ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sheet-handle" />
