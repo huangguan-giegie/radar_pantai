@@ -39,16 +39,16 @@ describe('brand entry routing', () => {
     expect(text()).toContain('COMMUNITY BEACH LITTER REPORTING & CLEANUP SUPPORT FOR MALAYSIA © 2026');
     expect(text()).not.toContain('Get Started');
     expect(view.root.findAllByType('nav')).toHaveLength(0);
-    act(() => vi.advanceTimersByTime(499));
+    act(() => { vi.advanceTimersByTime(499); });
     expect(path()).toBe(entry);
-    act(() => vi.advanceTimersByTime(1));
+    act(() => { vi.advanceTimersByTime(1); });
     expect(path()).toBe('/welcome');
     expect(text()).toContain('can make a difference.');
   });
 
   it('replaces the splash history entry so Back does not send the visitor through it again', async () => {
     await render(['/home', '/']);
-    act(() => vi.advanceTimersByTime(500));
+    act(() => { vi.advanceTimersByTime(500); });
     expect(path()).toBe('/welcome');
     act(() => view.root.findAllByType('button').find(node => node.children.includes('Test Back'))!.props.onClick());
     expect(path()).toBe('/home');
@@ -59,14 +59,14 @@ describe('brand entry routing', () => {
     await render(['/home', '/']);
     act(() => view.root.findAllByType('button').find(node => node.children.includes('Test Back'))!.props.onClick());
     expect(path()).toBe('/home');
-    act(() => vi.advanceTimersByTime(500));
+    act(() => { vi.advanceTimersByTime(500); });
     expect(path()).toBe('/home');
   });
 
   it.each(['/home', '/map?region=selangor&marine=on'])('preserves the direct destination %s', async (entry) => {
     await render([entry]);
     expect(path()).toBe(entry);
-    act(() => vi.advanceTimersByTime(500));
+    act(() => { vi.advanceTimersByTime(500); });
     expect(path()).toBe(entry);
     expect(text()).not.toContain('Get Started');
   });
