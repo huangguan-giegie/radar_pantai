@@ -36,6 +36,26 @@ describe("manual beach selection coordinates", () => {
     expect(markup).toContain("Selected beach");
   });
 
+  it("keeps long beach names and areas in their own non-shrinking rows on phones", () => {
+    state.beaches = [
+      { id: "long-1", name: "Adam and Eve Beach", area: "Northern Perhentian Kecil Island, Besut, Terengganu", lat: null, lng: null, severity: null, insufficientData: true, validReports: 0 },
+      { id: "long-2", name: "Adventure Beach", area: "Penang National Park, near Teluk Bahang and Kampung Nelayan", lat: null, lng: null, severity: null, insufficientData: true, validReports: 0 },
+    ];
+
+    const markup = renderToStaticMarkup(<ConfirmBeachScreen />);
+    const rows = markup.match(/<button[^>]*class="chip-hover"[^>]*>/g) ?? [];
+
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row).toContain("flex-shrink:0");
+      expect(row).toContain("min-height:58px");
+    }
+    expect(markup).toContain("Northern Perhentian Kecil Island");
+    expect(markup).toContain("Penang National Park");
+    expect(markup).toContain("overflow-wrap:anywhere");
+    expect(markup).toContain("scroll-y");
+  });
+
   it("keeps a supported beach's verified coordinates", () => {
     state.beaches[0].lat = 2.746;
     state.beaches[0].lng = 101.44;
