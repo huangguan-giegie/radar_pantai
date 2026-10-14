@@ -1,6 +1,9 @@
 name: Daily GCP PostgreSQL backup
 
 on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/gcp-postgres-backup.yml"]
   schedule:
     # 03:00 Malaysia time (UTC+8), every day.
     - cron: "0 19 * * *"
