@@ -1,0 +1,91 @@
+name: Daily GCP PostgreSQL backup
+
+on:
+  push:
+    branches: [main]
+    paths: [".github/workflows/gcp-postgres-backup.yml"]
+  schedule:
+    # 03:00 Malaysia time (UTC+8), every day.
+    - cron: "0 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: radar-pantai-daily-postgresql-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Export, upload and verify PostgreSQL 18
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Authenticate using existing GCP Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/199905345342/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-actions-deploy@project-5db6723a-ac19-4d7c-94a.iam.gserviceaccount.com
+
+      - name: Install Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: project-5db6723a-ac19-4d7c-94a
+
+      - name: Stream consistent database snapshot over IAP and verify GCS backup
+        shell: bash
+        env:
+          PROJECT_ID: project-5db6723a-ac19-4d7c-94a
+          INSTANCE: radar-sampah
+          ZONE: us-west1-b
+          BUCKET: project-5db6723a-ac19-4d7c-94a-radar-pantai-neon-backup
+        run: |
+          set -euo pipefail
+          umask 077
+          DIR="$RUNNER_TEMP/radar-postgres-backup"
+          mkdir -p "$DIR/verify"
+          trap 'rm -rf "$DIR"' EXIT
+          BASENAME="radar-pantai-$(date -u +%Y%m%dT%H%M%SZ)"
+          echo "Dumping PostgreSQL into temporary runner storage..."
+
+          # -T is essential: allocating a PTY would corrupt the binary pg_dump stream.
+          # Database credentials never leave the VM. Do not print dump bytes to logs.
+          gcloud compute ssh "$INSTANCE" \
+            --project="$PROJECT_ID" \
+            --zone="$ZONE" \
+            --tunnel-through-iap \
+            --quiet \
+            --command="sudo docker exec radar-postgres18 pg_dump -U radar -d neondb --format=custom --compress=3 --blobs" \
+            -- -T > "$DIR/$BASENAME.dump"
+
+          test "$(stat -c '%s' "$DIR/$BASENAME.dump")" -gt 1024
+          echo "Validating PostgreSQL 18 archive structure and data stream..."
+          docker run --rm -v "$DIR:/backup:ro" postgres:18-alpine \
+            pg_restore --list "/backup/$BASENAME.dump" >/dev/null
+          docker run --rm -v "$DIR:/backup:ro" postgres:18-alpine \
+            pg_restore --file=/dev/null "/backup/$BASENAME.dump"
+
+          (cd "$DIR" && sha256sum "$BASENAME.dump" > "$BASENAME.dump.sha256")
+          echo "Uploading to private GCS daily/ prefix..."
+          gcloud storage cp \
+            "$DIR/$BASENAME.dump" "gs://$BUCKET/daily/$BASENAME.dump"
+          gcloud storage cp \
+            "$DIR/$BASENAME.dump.sha256" "gs://$BUCKET/daily/$BASENAME.dump.sha256"
+
+          # Verify the uploaded bytes, not merely the existence of GCS objects.
+          gcloud storage cp \
+            "gs://$BUCKET/daily/$BASENAME.dump" "$DIR/verify/$BASENAME.dump"
+          gcloud storage cp \
+            "gs://$BUCKET/daily/$BASENAME.dump.sha256" "$DIR/verify/$BASENAME.dump.sha256"
+          (cd "$DIR/verify" && sha256sum -c "$BASENAME.dump.sha256")
+          cmp "$DIR/$BASENAME.dump" "$DIR/verify/$BASENAME.dump"
+
+          echo "BACKUP VERIFIED: gs://$BUCKET/daily/$BASENAME.dump"
+          echo "Backup size: $(stat -c '%s' "$DIR/$BASENAME.dump") bytes"
+
+      - name: Report backup failure
+        if: failure()
+        run: |
+          echo "::error::Radar Pantai PostgreSQL backup failed. Review this GitHub Actions run and previous successful GCS daily/ objects."
