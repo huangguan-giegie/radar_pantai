@@ -38,6 +38,21 @@ port = u.port or 5432
 if not host:
     raise SystemExit("DATABASE_URL has no hostname.")
 
+# Docker Compose service names (e.g. postgres) resolve from the app container
+# network, not from the VM host. Check the service readiness inside Compose.
+if host in config.get("services", {}) and host != "app":
+    service = config["services"][host]
+    service_env = service.get("environment", {})
+    database_user = service_env.get("POSTGRES_USER", "postgres")
+    database_name = service_env.get("POSTGRES_DB", database_user)
+    subprocess.run(
+        compose + ["exec", "-T", host, "pg_isready", "-U", database_user, "-d", database_name],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+    print("Local Docker Compose database is ready.")
+    raise SystemExit(0)
+
 records = socket.getaddrinfo(host, port, socket.AF_UNSPEC, socket.SOCK_STREAM)
 if not records:
     raise SystemExit("Database hostname did not resolve.")

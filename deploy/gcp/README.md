@@ -9,7 +9,8 @@ Production source of truth is `main`:
 - VM: `radar-sampah`, project `project-5db6723a-ac19-4d7c-94a`, zone `us-west1-b`.
 - Machine: `e2-micro`, approximately 1 GB RAM, with swap enabled.
 - Cloudflare reaches the web origin over external IPv6.
-- External IPv4 is retained for Neon/database outbound connectivity.
+- PostgreSQL 18 runs in the `radar-postgres18` container with a persistent volume. Production DATABASE_URL uses Docker Compose hostname `postgres`; public port 5432 is **not** exposed.
+- Existing external IPv4 may still incur charges, even though Neon is no longer a runtime dependency.
 - Public IPv4 web ingress on ports 80/443 stays closed; IPv6 web ingress stays enabled.
 - SSH administration uses IAP. Do not change `academy.huangguanedu.cn`.
 
@@ -33,7 +34,11 @@ same origin, so Render is not part of the normal frontend/API traffic path.
 
 The VM retains these files across source sync:
 
-- `/opt/radar-sampah/deploy/gcp/.env`: production secrets; never commit or print it.
+- `/opt/radar-sampah/deploy/gcp/.env`: production secrets, including local `DATABASE_URL` and `COMPOSE_FILE`; never commit or print it.
+- `/opt/radar-local-db/postgres.compose.yml`: local PostgreSQL Compose overlay kept **outside** the rsynced repository.
+- `/opt/radar-local-db/secrets/pg_password`: private PostgreSQL password.
+- `gcp_radar_postgres18_data`: PostgreSQL Docker volume; **do not remove** (contains all user data).
+- `/opt/radar-local-db/production.env.before-local-postgres`: sensitive pre-cutover environment backup.
 - `actual-project/ml-model/models/sea_taco_yolo11m_best.onnx`: frozen resident model.
 
 ONNX is downloaded only if the resident file is missing or is an LFS pointer.
@@ -44,9 +49,11 @@ production env and resident model remain unchanged during deployment.
 ## Connectivity checks
 
 `test-ipv6-dependencies.sh` retains its historical filename. It checks package
-registry HTTPS using whichever address family works, and verifies database TCP
-connectivity using IPv4 or IPv6. Compose parses the production dotenv file; the
-script does not source secret values as shell code or print resolved settings.
+registry HTTPS using whichever address family works. For the local Docker
+Compose `postgres` hostname it runs `pg_isready` inside that service, because
+the name is not resolvable from the VM host; for external database hosts it
+checks TCP connectivity. Compose parses the production dotenv file; the script
+does not source secret values as shell code or print resolved settings.
 
 Run it on the VM when required:
 
@@ -62,6 +69,36 @@ sudo bash ./test-ipv6-dependencies.sh
 curl -6 --fail http://[ORIGIN_IPV6]/api/health
 ```
 
+## Local PostgreSQL 18 (production)
+
+Neon's Free plan exhausted its data-transfer quota on 2026-10-14. A verified
+snapshot from 2026-10-13 15:13:21 UTC was restored to local PostgreSQL 18 and
+production switched after the owner confirmed there were no intervening writes.
+The cutover at 2026-10-14 04:46 UTC verified 179 beaches, 148 reports,
+148 users, 79 report photos (25,248,043 bytes), 100 cleanup actions, and
+41 community events; the app returned `healthy`.
+
+The local database uses a 192 MiB memory limit and a persistent named Docker
+volume. `COMPOSE_FILE` in private `.env` includes the absolute overlay
+`/opt/radar-local-db/postgres.compose.yml`; never delete that file or volume,
+remove its Compose service, or overwrite `.env` during deployment.
+
+Before and after deploying, verify that both services are healthy with:
+
+```bash
+cd /opt/radar-sampah/deploy/gcp
+sudo docker-compose ps
+sudo docker exec radar-postgres18 pg_isready -U radar -d neondb
+sudo docker exec radar-postgres18 psql -U radar -d neondb -At -c 'SELECT COUNT(*) FROM app.reports;'
+sudo docker inspect -f '{{.State.Health.Status}}' gcp_app_1
+free -m
+cat /proc/pressure/memory
+```
+
+The one-time Neon snapshot is **not** a recurring backup of new reports.
+Set up and verify regular off-VM PostgreSQL backups (including bytea photos)
+before relying on this single VM long-term. The previously verified GCS backup
+remains intact; it does not contain future writes.
 ## Runtime validation
 
 `diagnostics.sh` prints container state, RAM, swap, CPU sampling, the health
@@ -111,4 +148,4 @@ gcloud compute ssh radar-sampah \
 
 Production code belongs on `main`; do not maintain a long-lived deployment
 branch. Retire `deploy/gcp-e2-micro` after the `main` deployment and acceptance
-checks succeed. Preserve Neon and the working network during cleanup.
+checks succeed. Preserve the local PostgreSQL volume, its Compose overlay and private `.env` during cleanup.
