@@ -210,6 +210,12 @@ class LitterRecognizer:
             session_options.intra_op_num_threads = 1
             session_options.inter_op_num_threads = 1
             session_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            # Opt-in experiment only: disabling ONNX memory arenas/patterns may
+            # lower resident usage at the cost of slower or less stable latency.
+            # Keep inference, models, and the production default unchanged.
+            if os.getenv("RADAR_ONNX_LOW_MEMORY", "").lower() in {"1", "true", "yes", "on"}:
+                session_options.enable_cpu_mem_arena = False
+                session_options.enable_mem_pattern = False
             session = ort.InferenceSession(
                 str(model_path),
                 sess_options=session_options,
