@@ -25,6 +25,18 @@ PG_CONTAINER='radar-postgres18'
 test -f "$DEPLOY/docker-compose.yml"
 test -f "$DEPLOY/.env"
 cd "$DEPLOY"
+# This existing GCP VM uses the older standalone docker-compose executable.
+# The Docker CLI may be present without the v2 "docker compose" plugin.
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1 &&
+     docker-compose version >/dev/null 2>&1; then
+  COMPOSE=(docker-compose)
+else
+  echo "No supported Docker Compose installation found." >&2
+  exit 2
+fi
+echo "Compose command: ${COMPOSE[*]}"
 install -d -m 0700 "$PRIVATE" "$SECRETS" "$BACKUPS"
 
 if [ ! -e "$SECRETS/pg_password" ]; then
@@ -79,7 +91,7 @@ YAML
 chmod 600 "$PRIVATE/postgres.compose.yml"
 
 echo '=== Starting low-memory PostgreSQL in existing Compose network ==='
-docker compose -f "$DEPLOY/docker-compose.yml" -f "$PRIVATE/postgres.compose.yml" up -d postgres
+"${COMPOSE[@]}" -f "$DEPLOY/docker-compose.yml" -f "$PRIVATE/postgres.compose.yml" up -d postgres
 
 ready=0
 for i in $(seq 1 36); do
@@ -167,7 +179,7 @@ except Exception:
 PY
 
 echo '=== Switching app to local PostgreSQL (Neon remains untouched) ==='
-docker compose up -d --no-deps --force-recreate app
+"${COMPOSE[@]}" up -d --no-deps --force-recreate app
 
 status='starting'
 for i in $(seq 1 30); do
