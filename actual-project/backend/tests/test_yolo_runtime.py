@@ -99,6 +99,22 @@ def test_model_load_uses_onnx_cpu_session_and_warmup(tmp_path, monkeypatch):
     assert warmup.dtype == np.float32
 
 
+def test_onnx_low_memory_is_opt_in(tmp_path, monkeypatch):
+    model_path = tmp_path / "model.onnx"
+    model_path.write_bytes(b"onnx-model-bytes-" * 16)
+    runtime, sessions = fake_onnxruntime(model_path)
+    monkeypatch.setitem(sys.modules, "onnxruntime", runtime)
+    monkeypatch.setenv("LITTER_ONNX_MODEL_PATH", str(model_path))
+    monkeypatch.setenv("RADAR_ONNX_LOW_MEMORY", "1")
+
+    recognizer = LitterRecognizer.load()
+
+    assert recognizer.model is not None
+    assert sessions[0].sess_options.enable_cpu_mem_arena is False
+    assert sessions[0].sess_options.enable_mem_pattern is False
+    assert len(sessions[0].calls) == 1
+
+
 def test_onnx_recognition_preserves_six_class_mapping(tmp_path, monkeypatch):
     model_path = tmp_path / "model.onnx"
     model_path.write_bytes(b"onnx-model-bytes-" * 16)
