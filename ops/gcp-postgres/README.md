@@ -12,9 +12,11 @@ It reuses the existing GitHub Actions Workload Identity Federation identity and
 the already-provisioned IAP SSH authorization used for deployment.
 No new GCP SDK, service-account keys, or recurring processes are added to the VM.
 
-The runner streams a consistent PostgreSQL 18 pg_dump from the existing
-container without allocating an SSH pseudo-terminal. In an ephemeral directory
-it verifies the custom-format dump with PG18 pg_restore, then uploads both
+The runner requests a consistent PostgreSQL 18 pg_dump from the existing
+container into a private temporary file on the VM, then retrieves that file
+using IAP-enabled SCP (without allocating an SSH pseudo-terminal). A cleanup
+trap removes the VM copy and temporary runner files after completion.
+It verifies the custom-format dump with PG18 pg_restore, then uploads both
 a dump and SHA256 manifest to the private GCS backup bucket. It downloads
 both back and verifies the SHA256 and byte-for-byte equality. DB contents
 are not printed in logs or published as GitHub artifacts.

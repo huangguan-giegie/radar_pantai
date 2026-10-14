@@ -34,7 +34,7 @@ jobs:
         with:
           project_id: project-5db6723a-ac19-4d7c-94a
 
-      - name: Stream consistent database snapshot over IAP and verify GCS backup
+      - name: Export locally, copy over IAP SCP, verify and upload GCS backup
         shell: bash
         env:
           PROJECT_ID: project-5db6723a-ac19-4d7c-94a
@@ -46,21 +46,37 @@ jobs:
           umask 077
           DIR="$RUNNER_TEMP/radar-postgres-backup"
           mkdir -p "$DIR/verify"
-          trap 'rm -rf "$DIR"' EXIT
           BASENAME="radar-pantai-$(date -u +%Y%m%dT%H%M%SZ)"
-          echo "Dumping PostgreSQL into temporary runner storage..."
+          # Unique and private directory on the VM prevents races with future backups.
+          REMOTE_DIR="/tmp/radar-gcs-backup-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          cleanup() {
+            gcloud compute ssh "$INSTANCE" \
+              --project="$PROJECT_ID" --zone="$ZONE" \
+              --tunnel-through-iap --quiet \
+              --command="rm -f -- '$REMOTE_DIR/$BASENAME.dump'; rmdir -- '$REMOTE_DIR'" \
+              -- -T >/dev/null 2>&1 || true
+            rm -rf "$DIR"
+          }
+          trap cleanup EXIT
+          echo "Exporting PostgreSQL snapshot to private VM temp file..."
 
-          # -T is essential: allocating a PTY would corrupt the binary pg_dump stream.
-          # Database credentials never leave the VM. Do not print dump bytes to logs.
+          # Dump is written on the VM, then copied as a real file over IAP SCP.
+          # Never redirect gcloud SSH stdout into a PostgreSQL binary archive:
+          # the first run's archive listed correctly but failed full restore.
           gcloud compute ssh "$INSTANCE" \
-            --project="$PROJECT_ID" \
-            --zone="$ZONE" \
-            --tunnel-through-iap \
-            --quiet \
-            --command="sudo docker exec radar-postgres18 pg_dump -U radar -d neondb --format=custom --compress=3 --blobs" \
-            -- -T > "$DIR/$BASENAME.dump"
+            --project="$PROJECT_ID" --zone="$ZONE" \
+            --tunnel-through-iap --quiet \
+            --command="set -eu; umask 077; mkdir -m 700 '$REMOTE_DIR'; sudo docker exec radar-postgres18 pg_dump -U radar -d neondb --format=custom --compress=3 --blobs > '$REMOTE_DIR/$BASENAME.dump'; test \"\$(head -c 5 '$REMOTE_DIR/$BASENAME.dump')\" = 'PGDMP'" \
+            -- -T
+
+          echo "Downloading complete archive with gcloud compute scp..."
+          gcloud compute scp "$INSTANCE:$REMOTE_DIR/$BASENAME.dump" \
+            "$DIR/$BASENAME.dump" \
+            --project="$PROJECT_ID" --zone="$ZONE" \
+            --tunnel-through-iap --quiet
 
           test "$(stat -c '%s' "$DIR/$BASENAME.dump")" -gt 1024
+          test "$(head -c 5 "$DIR/$BASENAME.dump")" = "PGDMP"
           echo "Validating PostgreSQL 18 archive structure and data stream..."
           docker run --rm -v "$DIR:/backup:ro" postgres:18-alpine \
             pg_restore --list "/backup/$BASENAME.dump" >/dev/null
