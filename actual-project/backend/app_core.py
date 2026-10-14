@@ -402,7 +402,19 @@ def normalise_database_url(database_url: str | None) -> str:
 
 def create_engine_for_url(database_url: str) -> Engine:
     connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
-    engine = create_engine(database_url, future=True, connect_args=connect_args, pool_pre_ping=True)
+    pool_settings: dict[str, int] = {}
+    if not database_url.startswith("sqlite"):
+        # The one-worker GCP VM can keep fewer idle PostgreSQL connections than
+        # SQLAlchemy's 5+10 default; other hosts retain their existing defaults.
+        pool_size = int(os.getenv("RADAR_DB_POOL_SIZE", "5"))
+        max_overflow = int(os.getenv("RADAR_DB_MAX_OVERFLOW", "10"))
+        if pool_size < 1 or max_overflow < 0:
+            raise ValueError("Database pool size must be >= 1 and max overflow >= 0")
+        pool_settings = {"pool_size": pool_size, "max_overflow": max_overflow}
+    engine = create_engine(
+        database_url, future=True, connect_args=connect_args,
+        pool_pre_ping=True, **pool_settings,
+    )
     if database_url.startswith("sqlite"):
         return engine
     # Neon poolers can reset session settings between transactions. Translate

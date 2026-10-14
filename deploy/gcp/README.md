@@ -77,6 +77,22 @@ INSIGHTS_CACHE_TTL_SECONDS=60
 RADAR_PREWARM_PUBLIC_VIEWS=1
 ```
 
+Low-memory staging settings (on the 1 GiB VM):
+
+- Compose bounds idle SQLAlchemy connections at 2, plus at most 2 overflow connections.
+  Other deployments retain SQLAlchemy's previous defaults.
+- `MALLOC_ARENA_MAX=2`, `OPENBLAS_NUM_THREADS=1`, and `OMP_NUM_THREADS=1`
+  bound native allocator/BLAS thread resources without removing either AI model.
+- ONNX CPU arena and memory-pattern tuning is **off by default**. To trial it,
+  add `RADAR_ONNX_LOW_MEMORY=1` to the private `deploy/gcp/.env`, restart only
+  the app container, then measure idle and repeated inference RSS/PSS, latency,
+  swap and memory PSI. Undo the flag and restart if latency or memory worsens.
+- These settings are experiments, not evidence the VM has enough headroom for
+  PostgreSQL: stress-test local PostgreSQL and both AI paths before any cutover.
+- Keep the database in a persistent Docker volume, not under the rsynced
+  deployment source; keep Neon as production until final fresh backup and
+  reconciliation have succeeded. Never expose PostgreSQL port 5432 publicly.
+
 Keep the single worker configured in `gunicorn.conf.py`; inspect measured memory
 and swap activity before changing concurrency. Environment settings alone do
 not prove recognition or cache effectiveness. Check model availability, database

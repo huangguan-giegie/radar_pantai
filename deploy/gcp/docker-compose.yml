@@ -12,6 +12,15 @@ services:
       PORT: "5000"
       TRUST_PROXY_HEADERS: "1"
       LITTER_PRELOAD: "true"
+      # Reduce idle database connections without reducing Gunicorn's 4 threads.
+      RADAR_DB_POOL_SIZE: "2"
+      RADAR_DB_MAX_OVERFLOW: "2"
+      # Opt-in ONNX experiment: set to 1 in the private production .env.
+      RADAR_ONNX_LOW_MEMORY: "${RADAR_ONNX_LOW_MEMORY:-0}"
+      # Bound glibc and BLAS worker allocations on the 1 GiB VM.
+      MALLOC_ARENA_MAX: "2"
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
       EVENT_SCHEDULER_TTL_SECONDS: "60"
       INSIGHTS_CACHE_TTL_SECONDS: "60"
       RADAR_PREWARM_PUBLIC_VIEWS: "1"

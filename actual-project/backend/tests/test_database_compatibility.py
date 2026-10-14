@@ -75,3 +75,21 @@ def test_closed_idle_database_connection_is_replaced(tmp_path):
             assert connection.execute(text("SELECT 1")).scalar_one() == 1
     finally:
         engine.dispose()
+
+
+def test_postgres_pool_limits_can_be_configured_without_connecting(monkeypatch):
+    monkeypatch.setenv("RADAR_DB_POOL_SIZE", "2")
+    monkeypatch.setenv("RADAR_DB_MAX_OVERFLOW", "2")
+    # Creating the engine is local and does not contact a real PostgreSQL host.
+    engine = impl.create_engine_for_url("postgresql+psycopg://user:pass@localhost/db")
+    try:
+        assert engine.pool.size() == 2
+        assert engine.pool._max_overflow == 2
+    finally:
+        engine.dispose()
+
+
+def test_postgres_pool_rejects_invalid_limit(monkeypatch):
+    monkeypatch.setenv("RADAR_DB_POOL_SIZE", "0")
+    with pytest.raises(ValueError, match="Database pool size"):
+        impl.create_engine_for_url("postgresql+psycopg://user:pass@localhost/db")
