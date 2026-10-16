@@ -119,6 +119,17 @@ beforeEach(() => {
 });
 
 describe("backend v1 contribution account", () => {
+  it("shows a bottom-of-Account Feedback link that opens a pre-addressed email draft", () => {
+    const markup = renderAccount();
+    expect(markup).toContain('href="mailto:1838217031@qq.com?subject=Radar%20Pantai%20Feedback"');
+    expect(markup).toContain(">Feedback</strong>");
+    expect(markup).toContain("Email the Radar Pantai team");
+    expect(markup.indexOf(">Feedback</strong>")).toBeGreaterThan(markup.indexOf(">Sign Out</strong>"));
+    // Feedback never sends messages through the backend or includes credentials.
+    expect(markup).not.toContain("recoveryToken=");
+    expect(state.request).not.toHaveBeenCalled();
+  });
+
   it("loads the authenticated backend v1 profile and contributions", async () => {
     renderAccount();
     await state.loaders[0]();
