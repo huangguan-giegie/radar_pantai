@@ -137,6 +137,20 @@ describe("backend v1 contribution account", () => {
     expect(markup).not.toContain("Preview");
   });
 
+  it("offers a native email feedback link at the bottom of the Account page", () => {
+    const markup = renderAccount();
+    expect(markup).toContain('href="mailto:1838217031@qq.com?subject=Radar%20Pantai%20Feedback"');
+    expect(markup).toContain("Feedback");
+    expect(markup).toContain("Email us at 1838217031@qq.com");
+    expect(markup.indexOf("Sign Out")).toBeLessThan(markup.indexOf("Feedback"));
+    expect(markup.indexOf("Feedback")).toBeLessThan(markup.indexOf("</main>"));
+  });
+
+  it("does not show feedback in nested Account detail views", () => {
+    state.section = "leaderboard";
+    expect(renderAccount()).not.toContain("mailto:1838217031@qq.com");
+  });
+
   it("shows backend leaderboard entries with backend ranks", async () => {
     state.section = "leaderboard";
     const markup = renderAccount();
