@@ -94,6 +94,13 @@ export const ShieldCheck = ({ size = 15, color = '#3E4F6E', strokeWidth = 1.8, s
   </svg>
 );
 
+export const MailIcon = ({ size = 21, color = '#0B2161', strokeWidth = 1.8, style }: Props) => (
+  <svg {...base(size, color, strokeWidth, style)} aria-hidden="true">
+    <rect x="3" y="5.5" width="18" height="13" rx="2" />
+    <path d="m4 7 8 6 8-6" />
+  </svg>
+);
+
 export const Info = ({ size = 15, color = '#3E4F6E', strokeWidth = 1.8, style }: Props) => (
   <svg {...base(size, color, strokeWidth, style)}>
     <circle cx="12" cy="12" r="8.5" />
