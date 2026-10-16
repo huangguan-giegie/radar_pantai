@@ -131,17 +131,19 @@ export function LinkRow({
   title,
   subtitle,
   onClick,
+  href,
   leading,
   trailing,
 }: {
   title: string;
   subtitle?: string;
-  onClick: () => void;
+  onClick?: () => void;
+  href?: string;
   leading?: ReactNode;
   trailing?: ReactNode;
 }) {
-  return (
-    <button className="coastal-link-row" onClick={onClick}>
+  const content = (
+    <>
       {leading}
       <span className="grow">
         <strong>{title}</strong>
@@ -149,7 +151,14 @@ export function LinkRow({
       </span>
       {trailing}
       <ChevronRight color={C.dim} />
-    </button>
+    </>
+  );
+  // Use a real anchor for mailto: links so the browser can open the
+  // user's chosen email app without scripting or sending mail itself.
+  return href ? (
+    <a className="coastal-link-row" href={href}>{content}</a>
+  ) : (
+    <button type="button" className="coastal-link-row" onClick={onClick}>{content}</button>
   );
 }
 export function SectionHeading({
