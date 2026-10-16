@@ -131,17 +131,19 @@ export function LinkRow({
   title,
   subtitle,
   onClick,
+  href,
   leading,
   trailing,
 }: {
   title: string;
   subtitle?: string;
-  onClick: () => void;
+  onClick?: () => void;
+  href?: string;
   leading?: ReactNode;
   trailing?: ReactNode;
 }) {
-  return (
-    <button className="coastal-link-row" onClick={onClick}>
+  const content = (
+    <>
       {leading}
       <span className="grow">
         <strong>{title}</strong>
@@ -149,6 +151,19 @@ export function LinkRow({
       </span>
       {trailing}
       <ChevronRight color={C.dim} />
+    </>
+  );
+  // Native links invoke external handlers (e.g. a mail app) without JS navigation.
+  if (href) {
+    return (
+      <a className="coastal-link-row" href={href} style={{ textDecoration: "none" }}>
+        {content}
+      </a>
+    );
+  }
+  return (
+    <button type="button" className="coastal-link-row" onClick={onClick}>
+      {content}
     </button>
   );
 }
