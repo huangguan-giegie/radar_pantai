@@ -32,6 +32,7 @@ import {
 import {
   BarChart,
   BookmarkIcon,
+  MailIcon,
   ShieldCheck,
   SpeciesIcon,
   UserIcon,
@@ -334,6 +335,14 @@ export default function AccountScreen() {
       <p className="coastal-footnote" style={{ textAlign: "center" }}>
         Save your ID and recovery token before signing out.
       </p>
+      <WhiteCard>
+        <LinkRow
+          title="Feedback"
+          subtitle="Email us at 1838217031@qq.com"
+          leading={icon(<MailIcon />)}
+          href="mailto:1838217031@qq.com?subject=Radar%20Pantai%20Feedback"
+        />
+      </WhiteCard>
       {USE_MOCK && (
         <p className="demo-label">
           Preview · points are calculated on this device

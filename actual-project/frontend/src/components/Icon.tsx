@@ -147,6 +147,13 @@ export const HomeIcon = ({ size = 21, color = 'currentColor', strokeWidth = 1.7,
   </svg>
 );
 
+export const MailIcon = ({ size = 21, color = '#3E4F6E', strokeWidth = 1.8, style }: Props) => (
+  <svg {...base(size, color, strokeWidth, style)} aria-hidden="true">
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+    <path d="m4.5 7 7.5 6 7.5-6" />
+  </svg>
+);
+
 export const BookmarkIcon = ({ size = 21, color = 'currentColor', strokeWidth = 1.7, style }: Props) => (
   <svg {...base(size, color, strokeWidth, style)}>
     <path d="M7 4.5h10a1.3 1.3 0 0 1 1.3 1.3v13.4a.8.8 0 0 1-1.2.7L12 17.2l-5.1 2.7a.8.8 0 0 1-1.2-.7V5.8A1.3 1.3 0 0 1 7 4.5Z" />
