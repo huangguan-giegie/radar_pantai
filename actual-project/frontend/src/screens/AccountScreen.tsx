@@ -32,6 +32,7 @@ import {
 import {
   BarChart,
   BookmarkIcon,
+  MailIcon,
   ShieldCheck,
   SpeciesIcon,
   UserIcon,
@@ -329,6 +330,14 @@ export default function AccountScreen() {
             await signOut();
             nav("/welcome", { replace: true });
           }}
+        />
+      </WhiteCard>
+      <WhiteCard>
+        <LinkRow
+          title="Feedback"
+          subtitle="Email the Radar Pantai team"
+          leading={icon(<MailIcon />)}
+          href="mailto:1838217031@qq.com?subject=Radar%20Pantai%20Feedback"
         />
       </WhiteCard>
       <p className="coastal-footnote" style={{ textAlign: "center" }}>
